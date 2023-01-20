@@ -1,5 +1,27 @@
 import streamlit as st
+from google.cloud import firestore
 
-st.header('Hello 🌎!')
-if st.button('Balloons?'):
-    st.balloons()
+
+# Authenticate
+db = firestore.Client.from_service_account_json("firestore-key.json")
+
+# Create a reference to the collection
+doc_ref = db.collection("test_scores")
+
+# Get the data
+doc = doc_ref.get()
+
+# print to screen
+for doc in doc_ref.stream():
+    st.write("The id is: ", doc.id)
+    st.write("The contents are:", doc.to_dict())
+
+# # Create new test_score document
+# doc_ref = db.collection("test_scores").document("player3_scores")
+# doc_ref.set({
+#     "rider1_mgp": "Rossi",
+#     "rider2_mgp": "Bossi",
+#     "rider3_mgp": "Messi",
+#     "bonus30_mgp": 0
+# })
+
