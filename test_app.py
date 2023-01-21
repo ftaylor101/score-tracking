@@ -29,8 +29,20 @@ for doc in doc_ref.stream():
 #     "bonus30_mgp": 0
 # })
 
+players = ["Dave", "Frederic"]
 st.write("## Setting test")
-players_ref = db.collection_group("Frederic")
-for pick in players_ref.stream():
-    st.write(pick.id)
-    st.write(pick.to_dict())
+player_data = db.collection("Dave")
+doc_ref = player_data.list_documents()
+for doc in doc_ref:
+    st.write("Getting collections")
+    collections = doc.collections()
+    st.write("Now looping through collections")
+    for collection in collections:
+        st.write(f"collection id: {collection.id}")
+        for collection_doc in collection.stream():
+            st.write(f"{collection_doc.id} => {collection_doc.to_dict()}")
+    st.write("Ended collections, now looking at player scores")
+    st.write(f"doc data: {doc.id}")
+    data = doc.get()
+    st.write(f"current player scores for each chosen rider: {data.to_dict()}")
+
