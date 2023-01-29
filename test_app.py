@@ -29,11 +29,9 @@ doc_ref = db.collection("Players")
 for doc in doc_ref.stream():
     st.write(f"{doc.id} has scored: {doc.to_dict()} points")
 
-# # Create new test_score document
-# doc_ref = db.collection("test_scores").document("player3_scores")
-# doc_ref.set({
-#     "rider1_mgp": "Rossi",
-#     "rider2_mgp": "Bossi",
-#     "rider3_mgp": "Messi",
-#     "bonus30_mgp": 0
-# })
+# Set new data
+riders = ["Brad Binder", "Marc Marquez", "Enea Bastianini", "Pecco Bagnaia", "Fabio Quatararo"]
+for rider in riders:
+    rider_doc = db.collection("test_scores").document(rider)
+    st.write(f"Setting sprint points for {rider}")
+    rider_doc.update({"race3": 9})
