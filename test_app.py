@@ -30,8 +30,8 @@ for doc in doc_ref.stream():
     st.write(f"{doc.id} has scored: {doc.to_dict()} points")
 
 # Set new data
-riders = ["Brad Binder", "Marc Marquez", "Enea Bastianini", "Pecco Bagnaia", "Fabio Quatararo"]
-for rider in riders:
-    rider_doc = db.collection("test_scores").document(rider)
-    st.write(f"Setting sprint points for {rider}")
-    rider_doc.update({"race3": 9})
+# riders = ["Brad Binder", "Marc Marquez", "Enea Bastianini", "Pecco Bagnaia", "Fabio Quatararo"]
+# for rider in riders:
+#     rider_doc = db.collection("test_scores").document(rider)
+#     st.write(f"Setting sprint points for {rider}")
+#     rider_doc.update({"race3": 9})
