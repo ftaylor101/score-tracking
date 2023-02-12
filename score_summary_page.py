@@ -17,13 +17,13 @@ for doc in doc_ref.stream():
     player_names.append(doc.id)
     week_score.append(doc.to_dict()["current_week"])
     total_score.append(doc.to_dict()["total"])
-    # st.write(f"{doc.id} has picked: {[(k, v) for k, v in doc.to_dict().items()]}")
 
 week_df = pd.DataFrame({"Player": player_names, "Weekly score": week_score})
 total_df = pd.DataFrame({"Player": player_names, "Total score": total_score})
+score_df = pd.DataFrame({"Player": player_names, "Total score": total_score, "Weekly score": week_score})
 
-st.write("## Current week")
-st.table(week_df)
-
-st.write("## Total")
-st.table(total_df)
+st.write("## Points")
+score_df.sort_values(by="Total score", ascending=False, inplace=True)
+score_df.reset_index(inplace=True)
+score_df.drop(columns=["index"], inplace=True)
+st.dataframe(score_df, use_container_width=True)
