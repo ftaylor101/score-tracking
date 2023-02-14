@@ -38,15 +38,46 @@ st.write("## Plot")
 to_drop = ["Current week MotoGP", "Current week Moto2", "Current week Moto3", "Current week", "Total"]
 plot_df = display_df.drop(columns=to_drop)
 cumulative_plot_df = plot_df.cumsum(axis=1)
-cumulative_plot_df = cumulative_plot_df.T
-st.line_chart(cumulative_plot_df)
+df = cumulative_plot_df.stack().reset_index()
+df.rename(columns={"level_0": "Names", "level_1": "Event", 0: "Score"}, inplace=True)
 
-cht = alt.Chart(cumulative_plot_df).transform_fold(
-    ['race_1', 'race_2', 'race_3', 'race_4', 'race_5', 'race_6'],
-).mark_line().encode(
-    x='Names:N',
-    y='value:Q',
-    color='key:N'
+# altair plotting
+# Create a selection that chooses the nearest point & selects based on x-value
+nearest = alt.selection(type='single', nearest=True, on='mouseover',
+                        fields=['Event'], empty='none')
+# The basic line
+line = alt.Chart(df).mark_line(
+    point=alt.OverlayMarkDef()
+).encode(
+    x='Event:N',
+    y='Score:Q',
+    color='Names:N'
 )
-
+# Transparent selectors across the chart. This is what tells us the x-value of the cursor
+selectors = alt.Chart(df).mark_point().encode(
+    x='Event:N',
+    opacity=alt.value(0),
+).add_selection(
+    nearest
+)
+# Draw points on the line, and highlight based on selection
+points = line.mark_point().encode(
+    opacity=alt.condition(nearest, alt.value(1), alt.value(0))
+)
+# Draw text labels near the points, and highlight based on selection
+text = line.mark_text(align='left', dx=5, dy=-5).encode(
+    text=alt.condition(nearest, 'Score:Q', alt.value(' '))
+)
+# Draw a rule at the location of the selection
+rules = alt.Chart(df).mark_rule(color='gray').encode(
+    x='Event:N',
+).transform_filter(
+    nearest
+)
+# Put the five layers into a chart and bind the data
+cht = alt.layer(
+    line, selectors, points, rules, text
+).properties(
+    width=600, height=300
+)
 st.altair_chart(cht, use_container_width=True)
