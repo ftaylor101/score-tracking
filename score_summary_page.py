@@ -6,6 +6,7 @@ from typing import Dict
 import firebase_admin
 from firebase_admin import firestore, credentials
 
+st.image("Yogo on a motorbike.jpg", caption="Yogo", width=400)
 st.button("Want some balloons? Click here!", on_click=st.balloons)
 
 
