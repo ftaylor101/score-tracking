@@ -2,19 +2,31 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import json
+from typing import Dict
 import firebase_admin
-from firebase_admin import firestore
-from firebase_admin import credentials
+from firebase_admin import firestore, credentials
 
 st.button("Want some balloons? Click here!", on_click=st.balloons)
 
-# Authenticate
-key_dict = json.loads(st.secrets["textkey"])
-project_id = json.loads(st.secrets["projectId"])
-cred = credentials.Certificate(key_dict)
-firebase_admin.initialize_app(cred, {'projectId': project_id['id']})
-db = firestore.client()
 
+def init_with_service_account(cred_dict: Dict):
+    """
+    Initialize the Firestore DB client using a service account
+
+    :param cred_dict: dictionary with credentials
+    :return: firestore db client
+    """
+    cred = credentials.Certificate(cred_dict)
+    try:
+        firebase_admin.get_app()
+    except ValueError:
+        firebase_admin.initialize_app(cred)
+    return firestore.client()
+
+
+# Authenticate and get firestore client
+key_dict = json.loads(st.secrets["textkey"])
+db = init_with_service_account(key_dict)
 doc_ref = db.collection("players")
 
 # Get data and print to screen
