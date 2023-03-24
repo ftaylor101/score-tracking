@@ -1,12 +1,16 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import json
 from google.cloud import firestore
+from google.oauth2 import service_account
 
 st.button("Want some balloons? Click here!", on_click=st.balloons)
 
 # Authenticate
-db = firestore.Client.from_service_account_json("firestore-key.json")
+key_dict = json.loads(st.secrets["textkey"])
+creds = service_account.Credentials.from_service_account_info(key_dict)
+db = firestore.Client(credentials=creds, project="score-tracking")
 
 doc_ref = db.collection("players")
 
