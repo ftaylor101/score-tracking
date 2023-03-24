@@ -6,7 +6,7 @@ from typing import Dict
 import firebase_admin
 from firebase_admin import firestore, credentials
 
-st.image("Yogo on a motorbike.jpg", caption="Yogo", width=400)
+st.image("Yogo on a motorbike.jpg", caption="Yogo")
 st.button("Want some balloons? Click here!", on_click=st.balloons)
 
 
@@ -28,9 +28,9 @@ def init_with_service_account(cred_dict: Dict):
 # Authenticate and get firestore client
 key_dict = json.loads(st.secrets["textkey"])
 db = init_with_service_account(key_dict)
-doc_ref = db.collection("players")
 
 # Get data and print to screen
+doc_ref = db.collection("players")
 score_df = pd.DataFrame()
 for doc in doc_ref.stream():
     temp_df = pd.DataFrame(data=doc.to_dict(), index=[doc.id])
@@ -106,3 +106,9 @@ if plot_checkbox:
         width=600, height=300
     )
     st.altair_chart(cht, use_container_width=True)
+
+st.write("## Player picks")
+doc_ref = db.collection("picks")
+# Get data and print to screen
+for doc in doc_ref.stream():
+    st.write(f"{doc.id} has picked: {doc.to_dict()}")
