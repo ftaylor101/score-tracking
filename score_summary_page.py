@@ -13,8 +13,11 @@ def init_with_service_account(cred_dict: Dict):
     """
     Initialize the Firestore DB client using a service account
 
-    :param cred_dict: dictionary with credentials
-    :return: firestore db client
+    Args:
+        cred_dict: dictionary with credentials
+
+    Returns:
+        firestore db client
     """
     cred = credentials.Certificate(cred_dict)
     try:
@@ -108,6 +111,11 @@ if plot_checkbox:
 
 st.write("## Player picks")
 doc_ref = db.collection("picks")
-# Get data and print to screen
+# Get player picks and print to screen
+player_picks_df = pd.DataFrame()
 for doc in doc_ref.stream():
-    st.write(f"{doc.id} has picked: {doc.to_dict()}")
+    tmp_dct = {k: [v] for k, v in doc.to_dict().items()}
+    player_picks_df = pd.concat([player_picks_df, pd.DataFrame(tmp_dct, index=[doc.id])])
+
+player_picks_df = player_picks_df[['motogp_1', 'motogp_2', 'motogp_3', 'moto2_1', 'moto2_2', 'moto2_3', 'moto3_1', 'moto3_2', 'moto3_3']]
+st.dataframe(player_picks_df)
