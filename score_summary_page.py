@@ -54,7 +54,8 @@ score_df.rename(
 to_remove = ["bonus_30", "bonus_50"]
 display_df = score_df.drop(columns=to_remove)
 display_df = display_df.reindex(columns=sorted(display_df.columns))
-st.dataframe(display_df, use_container_width=True)
+formatted_df = display_df.style.format('{:.0f}')
+st.dataframe(formatted_df, use_container_width=True)
 
 st.write("## Plot")
 to_drop = ["Current week MotoGP", "Current week Moto2", "Current week Moto3", "Current week", "Total"]
