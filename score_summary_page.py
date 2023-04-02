@@ -70,44 +70,30 @@ if plot_checkbox:
     player_names = list(df["Names"].unique())
     people_to_plot = st.multiselect("Select players:", player_names, default=player_names)
     filtered_df = df[df["Names"].isin(people_to_plot)]
-    # Create a selection that chooses the nearest point & selects based on x-value
-    nearest = alt.selection(type='single', nearest=True, on='mouseover',
-                            fields=['Event'], empty='none')
-    # The basic line
-    line = alt.Chart(filtered_df).mark_line(
-        point=alt.OverlayMarkDef()
-    ).encode(
-        x='Event:N',
+
+    # Plotting
+    highlight = alt.selection(type='single', on='mouseover',
+                              fields=['Names'], nearest=True)
+
+    base = alt.Chart(filtered_df).encode(
+        x='Event:O',
         y='Score:Q',
         color='Names:N'
     )
-    # Transparent selectors across the chart. This is what tells us the x-value of the cursor
-    selectors = alt.Chart(filtered_df).mark_point().encode(
-        x='Event:N',
-        opacity=alt.value(0),
+
+    points = base.mark_circle().encode(
+        opacity=alt.value(0)
     ).add_selection(
-        nearest
-    )
-    # Draw points on the line, and highlight based on selection
-    points = line.mark_point().encode(
-        opacity=alt.condition(nearest, alt.value(1), alt.value(0))
-    )
-    # Draw text labels near the points, and highlight based on selection
-    text = line.mark_text(align='left', dx=5, dy=-5).encode(
-        text=alt.condition(nearest, 'Score:Q', alt.value(' '))
-    )
-    # Draw a rule at the location of the selection
-    rules = alt.Chart(filtered_df).mark_rule(color='gray').encode(
-        x='Event:N',
-    ).transform_filter(
-        nearest
-    )
-    # Put the five layers into a chart and bind the data
-    cht = alt.layer(
-        line, selectors, points, rules, text
+        highlight
     ).properties(
-        width=600, height=300
+        width=600
     )
+
+    lines = base.mark_line().encode(
+        size=alt.condition(~highlight, alt.value(1), alt.value(3))
+    )
+
+    cht = alt.layer(points + lines).resolve_scale()
     st.altair_chart(cht, use_container_width=True)
 
 st.write("## Player picks")
