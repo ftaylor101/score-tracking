@@ -90,36 +90,37 @@ df = cumulative_plot_df.stack().reset_index()
 df.rename(columns={"level_0": "Names", "level_1": "Event", 0: "Score"}, inplace=True)
 
 # altair plotting if wanted
-plot_checkbox = st.checkbox("Plot points")
-if plot_checkbox:
-    player_names = list(df["Names"].unique())
-    people_to_plot = st.multiselect("Select players:", player_names, default=player_names)
-    filtered_df = df[df["Names"].isin(people_to_plot)]
-
-    # Plotting
-    highlight = alt.selection(type='single', on='mouseover',
-                              fields=['Names'], nearest=True)
-
-    base = alt.Chart(filtered_df).encode(
-        x='Event:O',
-        y='Score:Q',
-        color='Names:N'
-    )
-
-    points = base.mark_circle().encode(
-        opacity=alt.value(0)
-    ).add_selection(
-        highlight
-    ).properties(
-        width=600
-    )
-
-    lines = base.mark_line().encode(
-        size=alt.condition(~highlight, alt.value(1), alt.value(3))
-    )
-
-    cht = alt.layer(points + lines).resolve_scale()
-    st.altair_chart(cht, use_container_width=True)
+st.write("I've broken the plotting, should be back soon")
+# plot_checkbox = st.checkbox("Plot points")
+# if plot_checkbox:
+#     player_names = list(df["Names"].unique())
+#     people_to_plot = st.multiselect("Select players:", player_names, default=player_names)
+#     filtered_df = df[df["Names"].isin(people_to_plot)]
+#
+#     # Plotting
+#     highlight = alt.selection(type='single', on='mouseover',
+#                               fields=['Names'], nearest=True)
+#
+#     base = alt.Chart(filtered_df).encode(
+#         x='Event:O',
+#         y='Score:Q',
+#         color='Names:N'
+#     )
+#
+#     points = base.mark_circle().encode(
+#         opacity=alt.value(0)
+#     ).add_selection(
+#         highlight
+#     ).properties(
+#         width=600
+#     )
+#
+#     lines = base.mark_line().encode(
+#         size=alt.condition(~highlight, alt.value(1), alt.value(3))
+#     )
+#
+#     cht = alt.layer(points + lines).resolve_scale()
+#     st.altair_chart(cht, use_container_width=True)
 
 # Displaying player choices
 st.write("## Player picks")
