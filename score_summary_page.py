@@ -83,14 +83,14 @@ st.dataframe(formatted_df, use_container_width=True)
 
 # Plotting
 st.write("## Plot")
-to_drop = ["Current week MotoGP", "Current week Moto2", "Current week Moto3", "Current week", "Total"]
-plot_df = display_df.drop(columns=to_drop)
-cumulative_plot_df = plot_df.cumsum(axis=1)
-df = cumulative_plot_df.stack().reset_index()
-df.rename(columns={"level_0": "Names", "level_1": "Event", 0: "Score"}, inplace=True)
+st.write("I've broken the plotting, should be back soon")
+# to_drop = ["Current week MotoGP", "Current week Moto2", "Current week Moto3", "Current week", "Total"]
+# plot_df = display_df.drop(columns=to_drop)
+# cumulative_plot_df = plot_df.cumsum(axis=1)
+# df = cumulative_plot_df.stack().reset_index()
+# df.rename(columns={"level_0": "Names", "level_1": "Event", 0: "Score"}, inplace=True)
 
 # altair plotting if wanted
-st.write("I've broken the plotting, should be back soon")
 # plot_checkbox = st.checkbox("Plot points")
 # if plot_checkbox:
 #     player_names = list(df["Names"].unique())
