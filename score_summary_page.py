@@ -83,44 +83,44 @@ st.dataframe(formatted_df, use_container_width=True)
 
 # Plotting
 st.write("## Plot")
-st.write("I've broken the plotting, should be back soon")
-# to_drop = ["Current week MotoGP", "Current week Moto2", "Current week Moto3", "Current week", "Total"]
-# plot_df = display_df.drop(columns=to_drop)
-# cumulative_plot_df = plot_df.cumsum(axis=1)
-# df = cumulative_plot_df.stack().reset_index()
-# df.rename(columns={"level_0": "Names", "level_1": "Event", 0: "Score"}, inplace=True)
+to_drop = ["Current week MotoGP", "Current week Moto2", "Current week Moto3", "Current week", "Total"]
+plot_df = display_df.drop(columns=to_drop)
+plot_df.set_index("Player", inplace=True)
+cumulative_plot_df = plot_df.cumsum(axis=1)
+df = cumulative_plot_df.stack().reset_index()
+df.rename(columns={"Player": "Names", "level_1": "Event", 0: "Score"}, inplace=True)
 
 # altair plotting if wanted
-# plot_checkbox = st.checkbox("Plot points")
-# if plot_checkbox:
-#     player_names = list(df["Names"].unique())
-#     people_to_plot = st.multiselect("Select players:", player_names, default=player_names)
-#     filtered_df = df[df["Names"].isin(people_to_plot)]
-#
-#     # Plotting
-#     highlight = alt.selection(type='single', on='mouseover',
-#                               fields=['Names'], nearest=True)
-#
-#     base = alt.Chart(filtered_df).encode(
-#         x='Event:O',
-#         y='Score:Q',
-#         color='Names:N'
-#     )
-#
-#     points = base.mark_circle().encode(
-#         opacity=alt.value(0)
-#     ).add_selection(
-#         highlight
-#     ).properties(
-#         width=600
-#     )
-#
-#     lines = base.mark_line().encode(
-#         size=alt.condition(~highlight, alt.value(1), alt.value(3))
-#     )
-#
-#     cht = alt.layer(points + lines).resolve_scale()
-#     st.altair_chart(cht, use_container_width=True)
+plot_checkbox = st.checkbox("Plot points")
+if plot_checkbox:
+    player_names = list(df["Names"].unique())
+    people_to_plot = st.multiselect("Select players:", player_names, default=player_names)
+    filtered_df = df[df["Names"].isin(people_to_plot)]
+
+    # Plotting
+    highlight = alt.selection(type='single', on='mouseover',
+                              fields=['Names'], nearest=True)
+
+    base = alt.Chart(filtered_df).encode(
+        x='Event:O',
+        y='Score:Q',
+        color='Names:N'
+    )
+
+    points = base.mark_circle().encode(
+        opacity=alt.value(0)
+    ).add_selection(
+        highlight
+    ).properties(
+        width=600
+    )
+
+    lines = base.mark_line().encode(
+        size=alt.condition(~highlight, alt.value(1), alt.value(3))
+    )
+
+    cht = alt.layer(points + lines).resolve_scale()
+    st.altair_chart(cht, use_container_width=True)
 
 # Displaying player choices
 st.write("## Player picks")
