@@ -31,6 +31,17 @@ def init_with_service_account(cred_dict: Dict):
 key_dict = json.loads(st.secrets["textkey"])
 db = init_with_service_account(key_dict)
 
+
+# region helper functions
+def highlight_column(x: pd.DataFrame):
+    """Highlight a particular column of a dataframe."""
+    r = f"background-color: #ff9999"
+    tmp_df = pd.DataFrame('', index=x.index, columns=x.columns)
+    tmp_df.loc[:, "Total"] = r
+    return tmp_df
+# endregion
+
+
 # Get data and print to screen
 doc_ref = db.collection("players")
 score_df = pd.DataFrame()
@@ -51,12 +62,26 @@ score_df.rename(
     inplace=True
 )
 
+# organising the dataframe
 to_remove = ["bonus_30", "bonus_50"]
 display_df = score_df.drop(columns=to_remove)
 display_df = display_df.reindex(columns=sorted(display_df.columns))
-formatted_df = display_df.style.format('{:.0f}')
+col_to_move = display_df.pop("Total")
+display_df.insert(0, "Total", col_to_move)
+
+display_df["Player"] = display_df.index
+col_to_move = display_df.pop("Player")
+display_df.insert(0, "Player", col_to_move)
+display_df.index = pd.RangeIndex(1, len(display_df.index)+1)
+
+# styling the dataframe
+float_cols = display_df.columns[1:]  # Player name column has been set as the first column
+formatted_df = display_df.style.format('{:.0f}', subset=float_cols)
+formatted_df.apply(highlight_column, axis=None)
+
 st.dataframe(formatted_df, use_container_width=True)
 
+# Plotting
 st.write("## Plot")
 to_drop = ["Current week MotoGP", "Current week Moto2", "Current week Moto3", "Current week", "Total"]
 plot_df = display_df.drop(columns=to_drop)
@@ -96,6 +121,7 @@ if plot_checkbox:
     cht = alt.layer(points + lines).resolve_scale()
     st.altair_chart(cht, use_container_width=True)
 
+# Displaying player choices
 st.write("## Player picks")
 doc_ref = db.collection("picks")
 # Get player picks and print to screen
