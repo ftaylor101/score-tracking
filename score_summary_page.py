@@ -6,8 +6,13 @@ from typing import Dict
 import firebase_admin
 from firebase_admin import firestore, credentials
 
-st.button("Want some balloons? Click here!", on_click=st.balloons)
-st.button("Or snow", on_click=st.snow)
+col1, col2 = st.columns([0.8, 0.2])
+with col1:
+    st.write("#### Welcome to Sandra's MotoGP Sweepstake")
+    st.write("Points for each player are summarised in the table below, and weekly totals are plotted for those "
+             "who like that sort of thing (like me)")
+with col2:
+    st.image("Yogo on a motorbike.jpg", caption="Yogo the yoghurt looking cool")
 
 
 def init_with_service_account(cred_dict: Dict):
@@ -159,3 +164,8 @@ for doc in doc_ref.stream():
 
 player_picks_df = player_picks_df[['motogp_1', 'motogp_2', 'motogp_3', 'moto2_1', 'moto2_2', 'moto2_3', 'moto3_1', 'moto3_2', 'moto3_3']]
 st.dataframe(player_picks_df)
+
+# extra yogo
+clicked = st.button("For more Yogo, click here")
+if clicked:
+    st.image("baby_yogo.jpg", caption="Baby Yogo, before he could ride a bike", width=200)

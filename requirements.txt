@@ -3,3 +3,4 @@ pandas~=1.5.3
 altair~=4.2.0
 firebase-admin
 protobuf~=3.20.1
+Pillow~=9.4.0
