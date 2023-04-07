@@ -100,7 +100,8 @@ def process_upload(image_to_upload, new_image_name: str) -> bool:
 
 with st.form("upload_image", clear_on_submit=True):
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-    image_name = st.text_input("Image name")
+    st.markdown(":red[name format needs testing]")
+    image_name = st.text_input("Image name (robustness untested - must be of the form name_of_picture.jpg)")
     upload = st.form_submit_button(label="Upload")
 
 if upload and uploaded_file and image_name:
