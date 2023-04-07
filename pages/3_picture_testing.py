@@ -1,19 +1,24 @@
 import streamlit as st
 import os
+import json
+from typing import Dict
 from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, storage
 
 
 # region authentication
-def init_with_service_account():
+def init_with_service_account(cred_dict: Dict):
     """
     Initialize the Firebase Storage client using a service account
+
+    Args:
+        cred_dict: dictionary with credentials
 
     Returns:
         storage client
     """
-    cred = credentials.Certificate('score-tracking-e8aeb-b28cdfe518b4.json')
+    cred = credentials.Certificate(cred_dict)
     try:
         firebase_admin.get_app()
     except ValueError:
@@ -23,7 +28,8 @@ def init_with_service_account():
     return storage.bucket('score-tracking-e8aeb.appspot.com')
 
 
-my_bucket = init_with_service_account()
+key_dict = json.loads(st.secrets["firebasetextkey"])
+my_bucket = init_with_service_account(key_dict)
 
 # Page code
 st.markdown("# :red[!!! WARNING !!!]")
