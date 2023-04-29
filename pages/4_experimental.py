@@ -171,8 +171,14 @@ st.write("Or just use the defaults, which is a picture of a beach in Nice for th
          "Water Lilies for the style.")
 
 # pred_model, transfer_model = download_models()
-style_predict_path = tf.keras.utils.get_file('style_predict.tflite', ml.get_model("21479137"))
-style_transform_path = tf.keras.utils.get_file('style_transform.tflite', ml.get_model("21479134"))
+style_predict_path = tf.keras.utils.get_file(
+    'style_predict.tflite',
+    "https://tfhub.dev/google/lite-model/magenta/arbitrary-image-stylization-v1-256/fp16/prediction/1?lite-format=tflite"
+)
+style_transform_path = tf.keras.utils.get_file(
+    'style_transform.tflite',
+    "https://tfhub.dev/google/lite-model/magenta/arbitrary-image-stylization-v1-256/fp16/transfer/1?lite-format=tflite"
+)
 
 # Select the images
 col1, col2 = st.columns([0.5, 0.5])
