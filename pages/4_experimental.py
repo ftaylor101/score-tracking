@@ -152,6 +152,18 @@ def run_style_transform(the_style_bottleneck, the_preprocessed_content_image, mo
 # endregion
 
 
+st.write("# Experimental style transfer")
+st.write("Do you wish Claude Monet could have painted a picture of your cat? Or perhaps that Van Gogh had painted "
+         "your sunflowers and not his. Well wonder no more, as now you can see how your images would look like "
+         "had they been painted by someone else.")
+st.write("To use the tool below, upload a content picture, this is your picture, which will be redrawn in a new style.")
+st.write("Then upload a style picture, this is a picture that contains the style you wish to your content to look "
+         "like.")
+st.write("The blend factor defines how much of the content's original style remains in the generated picture."
+         "0% means the style picture is applied fully, 100% means most of your picture remains.")
+st.write("Or just use the defaults, which is a picture of a beach in Nice for the content and Claude Monet's "
+         "Water Lilies for the style.")
+
 pred_model, transfer_model = download_models()
 style_predict_path = tf.keras.utils.get_file('style_predict.tflite', pred_model)
 style_transform_path = tf.keras.utils.get_file('style_transform.tflite', transfer_model)
