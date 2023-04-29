@@ -4,7 +4,7 @@ import json
 from typing import Dict, Tuple
 from datetime import date, timedelta
 import firebase_admin
-from firebase_admin import credentials, storage
+from firebase_admin import credentials, storage, ml
 from google.cloud.storage import Blob
 
 
