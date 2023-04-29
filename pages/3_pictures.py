@@ -80,10 +80,8 @@ def upload_image_to_firebase_storage(local_image_path: str, blob_name: str):
         local_image_path: The local name of the image to store.
         blob_name: The name of the image as will be seen in storage.
     """
-    # print(f"Getting file {local_image_path} and saving it to {blob_name}")
     blob = my_bucket.blob(blob_name)
     blob.upload_from_filename(local_image_path)
-    # print("File saved")
 
 
 def process_upload(image_to_upload, new_image_name: str) -> bool:
@@ -100,18 +98,11 @@ def process_upload(image_to_upload, new_image_name: str) -> bool:
     """
     success = False
     local_img = image_to_upload.name
-    # print(f"Local img name: {local_img}")
-    # print(f"new image name: {new_image_name}")
     file_available = False
     try:
-        # print(f"About to write open for {local_img}")
         with open(local_img, "wb") as f:
-            # print("Now in with")
             f.write(image_to_upload.getbuffer())
-            # print("Ending with")
             file_available = True
-            # print(f"Written file {local_img}")
-            # print(f"File available is {file_available}")
     except:
         st.error("Something went wrong when preparing the image")
 
@@ -125,9 +116,7 @@ def process_upload(image_to_upload, new_image_name: str) -> bool:
             st.error('Image has not been uploaded, please try again.')
         finally:
             try:
-                # print(f"Going to delete: {local_img}")
                 os.remove(local_img)
-                # print("Delete should have worked if you see me")
             except FileNotFoundError:
                 pass
     return success
@@ -136,7 +125,6 @@ def process_upload(image_to_upload, new_image_name: str) -> bool:
 with st.expander("Click here for photo upload"):
     with st.form("upload_image", clear_on_submit=True):
         uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-        # st.markdown(":red[name format needs testing]")
         image_name = st.text_input("Image name")
         upload = st.form_submit_button(label="Upload")
 
