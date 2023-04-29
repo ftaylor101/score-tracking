@@ -1,6 +1,6 @@
 streamlit~=1.22.0
 pandas~=1.5.3
 altair~=4.2.0
-firebase-admin
-protobuf~=3.20.1
 Pillow~=9.4.0
+tensorflow~=2.12.0
+plotly~=5.14.1
