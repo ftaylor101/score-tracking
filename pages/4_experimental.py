@@ -37,7 +37,13 @@ my_bucket = init_with_service_account(key_dict)
 @st.cache_resource
 def download_models():
     # returns prediction, transfer models
-    return ml.get_model("21479137"), ml.get_model("21479134")
+    pred_model = ml.get_model("21479137")
+    transfer_model = ml.get_model("21479134")
+
+    pred = ml.TFLiteFormat.from_dict(pred_model.as_dict())
+    transfer = ml.TFLiteFormat.from_dict(transfer_model.as_dict())
+    # return ml.get_model("21479137"), ml.get_model("21479134")
+    return pred, transfer
 
 
 def load_img(path_to_img) -> tf.dtypes:
@@ -164,7 +170,7 @@ st.write("The blend factor defines how much of the content's original style rema
 st.write("Or just use the defaults, which is a picture of a beach in Nice for the content and Claude Monet's "
          "Water Lilies for the style.")
 
-pred_model, transfer_model = download_models()
+# pred_model, transfer_model = download_models()
 style_predict_path = tf.keras.utils.get_file('style_predict.tflite', ml.get_model("21479137"))
 style_transform_path = tf.keras.utils.get_file('style_transform.tflite', ml.get_model("21479134"))
 
