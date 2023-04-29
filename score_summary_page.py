@@ -37,6 +37,11 @@ def init_with_service_account(cred_dict: Dict):
 key_dict = json.loads(st.secrets["textkey"])
 db = init_with_service_account(key_dict)
 
+# region session state setup
+if "current_points_df" not in st.session_state:
+    st.session_state["current_points_df"] = None
+# endregion
+
 
 # region helper functions
 def highlight_column(x: pd.DataFrame):
@@ -45,6 +50,38 @@ def highlight_column(x: pd.DataFrame):
     tmp_df = pd.DataFrame('', index=x.index, columns=x.columns)
     tmp_df.loc[:, "Total"] = r
     return tmp_df
+
+
+@st.cache_data
+def get_player_points_data() -> pd.DataFrame:
+    """
+    Function to retrieve player data and their points from the NoSQL db.
+
+    Returns:
+        A dataframe with player names and their points for all categories and races.
+    """
+    db_doc_ref = db.collection("players")
+    out_df = pd.DataFrame()
+    for db_doc in db_doc_ref.stream():
+        tmp_df = pd.DataFrame(data=db_doc.to_dict(), index=[db_doc.id])
+        out_df = pd.concat([out_df, tmp_df])
+    return out_df
+
+
+@st.cache_data
+def get_player_picks_data() -> pd.DataFrame:
+    """
+    Function to retrieve player choices for each category.
+
+    Returns:
+        A dataframe with players names and their choices for each racing category.
+    """
+    db_doc_ref = db.collection("picks")
+    out_df = pd.DataFrame()
+    for db_doc in db_doc_ref.stream():
+        tmp_dct = {k: [v] for k, v in db_doc.to_dict().items()}
+        out_df = pd.concat([out_df, pd.DataFrame(tmp_dct, index=[db_doc.id])])
+    return out_df
 
 
 def show_points():
@@ -59,10 +96,13 @@ def move_column(dataframe: pd.DataFrame, column_name: str, new_position: int) ->
     """
     Helper function to move a column to a specified location in a dataframe.
 
-    :param dataframe: The dataframe in which to move the column.
-    :param column_name: The column name.
-    :param new_position: The new column index.
-    :return: The dataframe with the columns rearranged.
+    Args:
+        dataframe: The dataframe in which to move the column.
+        column_name: The column name.
+        new_position: The new column index.
+
+    Returns:
+        The dataframe with the columns rearranged.
     """
     col_to_move = dataframe.pop(column_name)
     dataframe.insert(new_position, column_name, col_to_move)
@@ -71,13 +111,12 @@ def move_column(dataframe: pd.DataFrame, column_name: str, new_position: int) ->
 # endregion
 
 
-# Get data and print to screen
-doc_ref = db.collection("players")
-score_df = pd.DataFrame()
-for doc in doc_ref.stream():
-    temp_df = pd.DataFrame(data=doc.to_dict(), index=[doc.id])
-    score_df = pd.concat([score_df, temp_df])
+# region cache all data
+score_df = get_player_points_data()
+player_picks_df = get_player_picks_data()
+# endregion
 
+# region Show current points
 st.write("## :racing_motorcycle: Points :racing_motorcycle:")
 score_df.sort_values(by="total", ascending=False, inplace=True)
 score_df.rename(
@@ -111,8 +150,9 @@ formatted_df = display_df.style.format('{:.0f}', subset=float_cols)
 formatted_df.apply(highlight_column, axis=None)
 
 st.dataframe(formatted_df, use_container_width=True)
+# endregion
 
-# Plotting
+# region Plotting
 st.write("## :chart_with_upwards_trend: Plot :chart_with_downwards_trend:")
 to_drop = ["Current week MotoGP", "Current week Moto2", "Current week Moto3", "Current week", "Total"]
 plot_df = display_df.drop(columns=to_drop)
@@ -152,18 +192,13 @@ if plot_checkbox:
 
     cht = alt.layer(points + lines).resolve_scale()
     st.altair_chart(cht, use_container_width=True)
+# endregion
 
-# Displaying player choices
+# region Displaying player choices
 st.write("## :woman-raising-hand: Player picks :man-raising-hand:")
-doc_ref = db.collection("picks")
-# Get player picks and print to screen
-player_picks_df = pd.DataFrame()
-for doc in doc_ref.stream():
-    tmp_dct = {k: [v] for k, v in doc.to_dict().items()}
-    player_picks_df = pd.concat([player_picks_df, pd.DataFrame(tmp_dct, index=[doc.id])])
-
 player_picks_df = player_picks_df[['motogp_1', 'motogp_2', 'motogp_3', 'moto2_1', 'moto2_2', 'moto2_3', 'moto3_1', 'moto3_2', 'moto3_3']]
 st.dataframe(player_picks_df)
+# endregion
 
 # extra yogo
 clicked = st.button("For more Yogo, click here")
