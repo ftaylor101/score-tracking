@@ -36,14 +36,15 @@ my_bucket = init_with_service_account(key_dict)
 # region helper functions
 @st.cache_resource
 def download_models():
-    # returns prediction, transfer models
-    pred_model = ml.get_model("21479137")
-    transfer_model = ml.get_model("21479134")
-
-    pred = ml.TFLiteFormat.from_dict(pred_model.as_dict())
-    transfer = ml.TFLiteFormat.from_dict(transfer_model.as_dict())
-    # return ml.get_model("21479137"), ml.get_model("21479134")
-    return pred, transfer
+    predict = tf.keras.utils.get_file(
+        'style_predict.tflite',
+        "https://tfhub.dev/google/lite-model/magenta/arbitrary-image-stylization-v1-256/fp16/prediction/1?lite-format=tflite"
+    )
+    transform = tf.keras.utils.get_file(
+        'style_transform.tflite',
+        "https://tfhub.dev/google/lite-model/magenta/arbitrary-image-stylization-v1-256/fp16/transfer/1?lite-format=tflite"
+    )
+    return predict, transform
 
 
 def load_img(path_to_img) -> tf.dtypes:
@@ -170,15 +171,15 @@ st.write("The blend factor defines how much of the content's original style rema
 st.write("Or just use the defaults, which is a picture of a beach in Nice for the content and Claude Monet's "
          "Water Lilies for the style.")
 
-# pred_model, transfer_model = download_models()
-style_predict_path = tf.keras.utils.get_file(
-    'style_predict.tflite',
-    "https://tfhub.dev/google/lite-model/magenta/arbitrary-image-stylization-v1-256/fp16/prediction/1?lite-format=tflite"
-)
-style_transform_path = tf.keras.utils.get_file(
-    'style_transform.tflite',
-    "https://tfhub.dev/google/lite-model/magenta/arbitrary-image-stylization-v1-256/fp16/transfer/1?lite-format=tflite"
-)
+style_predict_path, style_transform_path = download_models()
+# style_predict_path = tf.keras.utils.get_file(
+#     'style_predict.tflite',
+#     "https://tfhub.dev/google/lite-model/magenta/arbitrary-image-stylization-v1-256/fp16/prediction/1?lite-format=tflite"
+# )
+# style_transform_path = tf.keras.utils.get_file(
+#     'style_transform.tflite',
+#     "https://tfhub.dev/google/lite-model/magenta/arbitrary-image-stylization-v1-256/fp16/transfer/1?lite-format=tflite"
+# )
 
 # Select the images
 col1, col2 = st.columns([0.5, 0.5])
