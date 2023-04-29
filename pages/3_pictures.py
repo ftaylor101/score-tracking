@@ -5,6 +5,7 @@ from typing import Dict, Tuple
 from datetime import date, timedelta
 import firebase_admin
 from firebase_admin import credentials, storage
+from google.cloud.storage import Blob
 
 
 # region authentication
@@ -30,19 +31,43 @@ def init_with_service_account(cred_dict: Dict):
 
 key_dict = json.loads(st.secrets["firebasetextkey"])
 my_bucket = init_with_service_account(key_dict)
+# endregion
 
 # region session state setup
 if "picture_start_date" not in st.session_state:
     st.session_state["picture_start_date"] = date.today() - timedelta(days=5)
 if "picture_end_date" not in st.session_state:
     st.session_state["picture_end_date"] = date.today() + timedelta(days=31)
+if "downloaded_pictures" not in st.session_state:
+    st.session_state["downloaded_pictures"] = list()
 # endregion
 
-# Page code
+# region Introduction to page
 st.markdown("# Share your pictures of MotoGP holidays")
 st.write("This page is for us to share a few pictures of any race weekends we may go on this season.")
 st.write("Choose an image and give it a name and then hit the upload button.")
 st.write("To view pictures, choose the date range you wish to see pictures from and click show pictures.")
+# endregion
+
+
+# region helper functions
+def download_image(blob: Blob, filename: str) -> str:
+    """
+    Function to download an image from a Google Firebase store to a local folder for static file serving.
+
+    Args:
+        blob: The Firebase blob to download.
+        filename: The filename of the image, default will be the name used during storage.
+
+    Returns:
+        The path to the image including file name.
+    """
+    name = filename.split(".")[0]
+    image_path = r"../score-tracking/static/" + name + ".jpg"
+    if name not in st.session_state["downloaded_pictures"]:
+        blob.download_to_filename(image_path)
+        st.session_state["downloaded_pictures"].append(name)
+    return image_path
 # endregion
 
 
@@ -148,6 +173,6 @@ if dates_picked:
     all_blobs = my_bucket.list_blobs()
     for b in all_blobs:
         if start_date < date.fromtimestamp(b.time_created.timestamp()) < end_date:
-            b.download_to_filename("tmp_img.jpg")
-            st.image("tmp_img.jpg", caption=b.name)
+            image = download_image(blob=b, filename=b.name)
+            st.image(image, caption=b.name)
 # endregion
