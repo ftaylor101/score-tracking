@@ -48,6 +48,10 @@ def melt_df(df_to_melt: pd.DataFrame, new_columns: List[str]) -> pd.DataFrame:
 def analyse_dataframe(df: pd.DataFrame):
     st.session_state["in_current_analysis_session"] = True
 
+    # remove any short laps where riders take a shortcut to the pits
+    min_lap_time_allowed = df.median().min() * 0.9  # fastest lap is assumed to be only up to 10% faster
+    df.mask(df < min_lap_time_allowed, inplace=True)
+
     # get fastest lap for relative comparison purposes
     fastest_lap = df.min().min()
     fastest_rider = df.min().idxmin()
@@ -148,7 +152,7 @@ def analyse_dataframe(df: pd.DataFrame):
     st.write("Increasing the tolerance means more laps are considered in this analysis (therefore including some slow "
              "down laps) and widening the bins will mean more laps from a rider will overlap with laps from other "
              "riders.")
-    st.write("A larger overlap leads to a higher similarity score due ot the reduced granularity in the comparison. "
+    st.write("A larger overlap leads to a higher similarity score due to the reduced granularity in the comparison. "
              "However, if the bin width is too small then it will decrease the ability to compare laps between "
              "riders.")
     # Using the fastest lap, bin width and a tolerance, reduce each riders' set of laps to a useful set
@@ -166,6 +170,7 @@ def analyse_dataframe(df: pd.DataFrame):
     st.write(f"Low bin = {lowest_bin_limit}, high bin = {highest_bin_limit}, num bins = {num_of_bins}")
     for rider in df.columns:
         rider_lap_times = df[rider].dropna().values
+        # todo move stats.relfreq to metrics class
         res = stats.relfreq(
             a=rider_lap_times,
             defaultreallimits=(lowest_bin_limit, highest_bin_limit),
