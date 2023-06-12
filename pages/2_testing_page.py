@@ -48,9 +48,11 @@ def melt_df(df_to_melt: pd.DataFrame, new_columns: List[str]) -> pd.DataFrame:
 def analyse_dataframe(df: pd.DataFrame):
     st.session_state["in_current_analysis_session"] = True
 
-    # remove any short laps where riders take a shortcut to the pits
-    min_lap_time_allowed = df.median().min() * 0.9  # fastest lap is assumed to be only up to 10% faster
+    # remove any short laps where riders take a shortcut to the pits or slow/cool down laps
+    min_lap_time_allowed = df.median().median() * 0.9  # fastest lap is assumed to be only up to 10% faster
+    max_lap_time_allowed = df.median().median() * 1.1  # fastest lap is assumed to be only up to 10% faster
     df.mask(df < min_lap_time_allowed, inplace=True)
+    df.mask(df > max_lap_time_allowed, inplace=True)
 
     # get fastest lap for relative comparison purposes
     fastest_lap = df.min().min()
