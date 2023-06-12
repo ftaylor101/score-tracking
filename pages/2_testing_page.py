@@ -32,6 +32,8 @@ st.write("## :chart_with_upwards_trend: Plot lots of things! :chart_with_downwar
 st.write("This page is to analyse MotoGP practice sessions.")
 st.write("Choose a race weekend, choose the sessions to analyse and the year.")
 st.write("**This page is still under construction and so may change at any moment**")
+st.write("I am still figuring out what is useful and what is not, and how best to incorporate tyre compound and life "
+         "into the analysis.")
 # endregion
 
 
@@ -121,6 +123,10 @@ def analyse_dataframe(df: pd.DataFrame):
                                            meanline_visible=True,
                                            points="all"))
         st.plotly_chart(violin_fig)
+
+        # plot empirical cumulative distribution functions for each selected rider
+        ecdf_fig = px.ecdf(rider_laps, x=selected_riders)
+        st.plotly_chart(ecdf_fig)
 
     # with st.form("Comparison analysis"):
     #     rider_metrics_melt = melt_df(df, ["Riders", "LapTimes"])
