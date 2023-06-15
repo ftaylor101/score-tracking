@@ -63,7 +63,27 @@ class PdfRetriever:
 
         return url_exists
 
-    def retrieve_file(self, year: str, race: str, session: str) -> List[str]:
+    def check_race_exist(self, year: str, race: str) -> bool:
+        """
+        Uses the arguments given to form a URL and check its validity.
+
+        :param year: The year of the desired race.
+        :param race: The race's 3-letter code.
+        :return: Boolean, True if a race and /or sprint exists, otherwise False.
+        """
+        url_exists = False
+        while not url_exists:
+            for sess in ["SPR", "RAC"]:
+                url_exists = self.__check_url_validity(
+                    url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
+                )
+            else:
+                print("No race or sprint sessions found")
+                break
+
+        return url_exists
+
+    def retrieve_practice_files(self, year: str, race: str, session: str) -> List[str]:
         """
         Gets the PDF from the website.
 
@@ -89,6 +109,34 @@ class PdfRetriever:
             valid_url = self.__check_url_validity(url)
             if valid_url:
                 download_name = r"../score-tracking/static/" + f"{year}_{race}_{sess}.pdf"
+                if os.path.isfile(download_name):
+                    file_name = download_name
+                else:
+                    file_name = wget.download(url, download_name)
+                file_names.append(file_name)
+
+        return file_names
+
+    def retrieve_race_files(self, year: str, race: str) -> List[str]:
+        """
+        Gets the PDF from the website.
+
+        :param year: The year of the desired sessions.
+        :param race: The race of the desired sessions.
+        :return: The pdf name saved locally
+        """
+        races = ["SPR", "RAC"]
+
+        self.year = year
+        self.race = race
+
+        file_names = list()
+
+        for race_type in races:
+            url = f"https://resources.motogp.com/files/results/{self.year}/{self.race}/MotoGP/{race_type}/Analysis.pdf"
+            valid_url = self.__check_url_validity(url)
+            if valid_url:
+                download_name = r"../score-tracking/static/" + f"{year}_{race}_{race_type}.pdf"
                 if os.path.isfile(download_name):
                     file_name = download_name
                 else:

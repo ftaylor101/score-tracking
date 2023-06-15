@@ -46,11 +46,13 @@ class PdfParser:
         split_lap = lap_time.split("\n")
         return split_lap[1]
 
-    def parse_pdf(self, file: str) -> pd.DataFrame:
+    def parse_pdf(self, file: str, delete_if_less_than_three: bool) -> pd.DataFrame:
         """
         This method accepts a PDF and returns a dataframe with all riders and their lap times and tyre information.
 
-        :param file: the file path including file name and extension to the practice session file.
+        :param file: The file path including file name and extension to the practice session file.
+        :param delete_if_less_than_three:
+            Delete the rider's lap times if only less than three laps exist. Only useful for practice sessions.
         :return: a dataframe
         """
         with fitz.Document(file) as doc:
@@ -81,14 +83,15 @@ class PdfParser:
 
         rider_and_lap_time_dict = dict(zip(riders_names_only, rider_lap_times))
 
-        # check that each rider has at least 3 laps
-        to_delete = list()
-        for k, v in rider_and_lap_time_dict.items():
-            if len(v) < 3:
-                to_delete.append(k)
-        if to_delete:
-            for rider_name in to_delete:
-                del rider_and_lap_time_dict[rider_name]
+        if delete_if_less_than_three:
+            # check that each rider has at least 3 laps
+            to_delete = list()
+            for k, v in rider_and_lap_time_dict.items():
+                if len(v) < 3:
+                    to_delete.append(k)
+            if to_delete:
+                for rider_name in to_delete:
+                    del rider_and_lap_time_dict[rider_name]
 
         rider_and_lap_time_df = pd.DataFrame.from_dict(rider_and_lap_time_dict, orient='index').T
 

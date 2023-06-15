@@ -246,14 +246,14 @@ if __name__ == "__main__":
             exists = pdfs.check_sessions_exist(year, race, session)
 
         if exists:
-            all_session_file_names = pdfs.retrieve_file(year, race, session)
+            all_session_file_names = pdfs.retrieve_practice_files(year, race, session)
             st.success("All available sessions downloaded")
             st.session_state["year"] = year
             st.session_state["race"] = race
             st.session_state["sessions"] = session
             final_df = pd.DataFrame()
             for file in all_session_file_names:
-                tmp_df = parser.parse_pdf(file)
+                tmp_df = parser.parse_pdf(file, delete_if_less_than_three=True)
                 final_df = pd.concat([final_df, tmp_df], ignore_index=True)
             st.session_state["current_analysis_df"] = final_df
         elif not exists:
