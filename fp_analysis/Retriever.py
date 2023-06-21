@@ -1,7 +1,7 @@
 import os
 import wget
 import urllib.request
-from typing import List
+from typing import List, Union
 
 from urllib.error import HTTPError
 
@@ -15,6 +15,13 @@ class PdfRetriever:
         self.race = None
         self.session = None
         self.sessions = None
+
+        self.categories = {
+            "MotoGP Race": "MotoGP",
+            "MotoGP Sprint": "MotoGP",
+            "Moto2": "Moto2",
+            "Moto3": "Moto3",
+        }
 
     @staticmethod
     def __check_url_validity(url: str) -> bool:
@@ -63,23 +70,23 @@ class PdfRetriever:
 
         return url_exists
 
-    def check_race_exist(self, year: str, race: str) -> bool:
+    def check_race_exist(self, year: str, race: str, category: str) -> bool:
         """
         Uses the arguments given to form a URL and check its validity.
 
         :param year: The year of the desired race.
         :param race: The race's 3-letter code.
+        :param category: The category of the race.
         :return: Boolean, True if a race and /or sprint exists, otherwise False.
         """
-        url_exists = False
-        while not url_exists:
-            for sess in ["SPR", "RAC"]:
-                url_exists = self.__check_url_validity(
-                    url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
-                )
-            else:
-                print("No race or sprint sessions found")
-                break
+        sess = "SPR" if category == "MotoGP Sprint" else "RAC"
+        race_class = self.categories[category]
+
+        url_exists = self.__check_url_validity(
+            url=f"https://www.motogp.com/en/gp-results/{year}/{race}/{race_class}/{sess}/Classification"
+        )
+        if not url_exists:
+            print(f"No {category} race found")
 
         return url_exists
 
@@ -117,30 +124,30 @@ class PdfRetriever:
 
         return file_names
 
-    def retrieve_race_files(self, year: str, race: str) -> List[str]:
+    def retrieve_race_files(self, year: str, race: str, category: str) -> Union[str, None]:
         """
         Gets the PDF from the website.
 
-        :param year: The year of the desired sessions.
-        :param race: The race of the desired sessions.
-        :return: The pdf name saved locally
+        :param year: The year of the desired race.
+        :param race: The race of the desired race.
+        :param category: The category of the desired race.
+        :return: The pdf name saved locally or None if no analysis file exists.
         """
-        races = ["SPR", "RAC"]
+        race_type = "SPR" if category == "MotoGP Sprint" else "RAC"
+        race_class = self.categories[category]
 
         self.year = year
         self.race = race
 
-        file_names = list()
+        url = \
+            f"https://resources.motogp.com/files/results/{self.year}/{self.race}/{race_class}/{race_type}/Analysis.pdf"
+        valid_url = self.__check_url_validity(url)
+        file_name = None
+        if valid_url:
+            download_name = r"../score-tracking/static/" + f"{year}_{race}_{race_class}_{race_type}.pdf"
+            if os.path.isfile(download_name):
+                file_name = download_name
+            else:
+                file_name = wget.download(url, download_name)
 
-        for race_type in races:
-            url = f"https://resources.motogp.com/files/results/{self.year}/{self.race}/MotoGP/{race_type}/Analysis.pdf"
-            valid_url = self.__check_url_validity(url)
-            if valid_url:
-                download_name = r"../score-tracking/static/" + f"{year}_{race}_{race_type}.pdf"
-                if os.path.isfile(download_name):
-                    file_name = download_name
-                else:
-                    file_name = wget.download(url, download_name)
-                file_names.append(file_name)
-
-        return file_names
+        return file_name
