@@ -29,11 +29,14 @@ class PdfParser:
         """
         Remove a newline \n character and practice positions to leave just a name.
 
+        Sometimes the regex returns the team name and with or without a leading \n character so always count from the
+        end.
+
         :param name: The string with \n and position included.
         :return: Just a firstname and surname as a single string.
         """
         split_name = name.split("\n")
-        return split_name[0]
+        return split_name[-2]
 
     @staticmethod
     def _trim_laptimes(lap_time: str) -> str:
@@ -62,7 +65,8 @@ class PdfParser:
 
         # rider first names start with a capital, surnames are all uppercase and position (1st, 2nd, 3rd, ...) always
         # follows
-        rider_name_pattern = r"[A-Z][a-z]+\s[A-ZÑ\s]{2,}\s\d{1,2}[stndrh]{2,}"
+        # rider_name_pattern = r"[A-Z][a-z]+\s[A-ZÑÖÜÁ\s]{2,}\s\d{1,2}[stndrh]{2,}"
+        rider_name_pattern = r"\s{1}[A-Z]{3}\s{1}[\w\s]+\s\d{1,2}[stndrh]{2,}"
         riders_with_position = re.findall(rider_name_pattern, text)
         riders_names_only = list()
         for rider in riders_with_position:
