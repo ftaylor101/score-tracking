@@ -122,7 +122,6 @@ if __name__ == "__main__":
             final_df = pd.DataFrame()
             if race_file_name:
                 race_df = parser.parse_pdf(race_file_name, delete_if_less_than_three=False)
-                st.dataframe(race_df)
                 st.session_state["current_race_df"] = race_df
             else:
                 st.error("Something went wrong parsing the race data.")
