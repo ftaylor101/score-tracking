@@ -10,4 +10,4 @@ wget~=3.2
 numpy~=1.23.5
 scikit-learn~=1.2.2
 scipy~=1.10.1
-PyMuPDF~=1.22.2
+PyMuPDF~=1.21.0

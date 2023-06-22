@@ -63,10 +63,9 @@ class PdfParser:
             for page in doc:
                 text += page.get_text()
 
-        # rider first names start with a capital, surnames are all uppercase and position (1st, 2nd, 3rd, ...) always
-        # follows
-        # rider_name_pattern = r"[A-Z][a-z]+\s[A-ZÑÖÜÁ\s]{2,}\s\d{1,2}[stndrh]{2,}"
-        rider_name_pattern = r"\s{1}[A-Z]{3}\s{1}[\w\s]+\s\d{1,2}[stndrh]{2,}"
+        # Nationality three-letter code proceeds the name, the rider first names start with a capital, surnames are all
+        # uppercase and position (1st, 2nd, 3rd, ...) always follows
+        rider_name_pattern = r"[A-Z]{3}\s{1}[\w\s]+\s\d{1,2}[stndrh]{2,}"
         riders_with_position = re.findall(rider_name_pattern, text)
         riders_names_only = list()
         for rider in riders_with_position:
