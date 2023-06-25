@@ -68,15 +68,6 @@ def analyse_dataframe(the_race_df: pd.DataFrame):
     gap_to_winner_plotly = px.line(melt_cum_gap_df, x="Lap", y="Gap", color="Rider", markers=True)
     st.plotly_chart(gap_to_winner_plotly)
 
-    st.write("This plot shows the difference between one lap and the next for each rider. A large value indicates "
-             "a long lap or a trip across the gravel trap. Maybe not so useful as they are all very consistent.")
-    race_diff_df = the_race_df.diff()
-    race_diff_df.reset_index(inplace=True)
-    melt_race_diff_df = race_diff_df.melt(id_vars=["index"], value_vars=list(the_race_df.columns))
-    melt_race_diff_df.rename(columns={"index": "Lap", "variable": "Rider", "value": "Gap"}, inplace=True)
-    race_lap_diff_plotly = px.line(melt_race_diff_df, x="Lap", y="Gap", color="Rider", markers=True)
-    st.plotly_chart(race_lap_diff_plotly)
-
     st.write("This box plot shows the spread of a rider's lap times. The smaller the box the more consistent they "
              "are. The lower the box the faster they are. Outliers such as the first lap are shown by dots. The middle "
              "50% of lap times are covered by the box.")
