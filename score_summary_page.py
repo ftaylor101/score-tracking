@@ -5,6 +5,8 @@ import json
 from typing import Dict
 import firebase_admin
 from firebase_admin import firestore, credentials
+from datetime import datetime
+
 
 col1, col2 = st.columns([0.8, 0.2])
 with col1:
@@ -52,14 +54,30 @@ def highlight_column(x: pd.DataFrame):
     return tmp_df
 
 
-@st.cache_data
-def get_player_points_data() -> pd.DataFrame:
+def get_race_number() -> int:
     """
-    Function to retrieve player data and their points from the NoSQL db.
+    Function to retrieve the current race number in the database.
+
+    :return:
+        A race number as an integer.
+    """
+    return db.collection("race update").document("current race number").get().to_dict()["race"]
+
+
+@st.cache_data
+def get_player_points_data(race_number: int) -> pd.DataFrame:
+    """
+    Function to retrieve player data and their points from the NoSQL db. The race number is used for caching control.
+
+    Args:
+        race_number: The most recent race number. If changed, it will re-run this function instead of returning the
+        cached dataframe.
 
     Returns:
         A dataframe with player names and their points for all categories and races.
     """
+    print(f"The most recent race number is: {race_number}")
+
     db_doc_ref = db.collection("players")
     out_df = pd.DataFrame()
     for db_doc in db_doc_ref.stream():
@@ -112,7 +130,8 @@ def move_column(dataframe: pd.DataFrame, column_name: str, new_position: int) ->
 
 
 # region cache all data
-score_df = get_player_points_data()
+current_race_number = get_race_number()
+score_df = get_player_points_data(current_race_number)
 player_picks_df = get_player_picks_data()
 # endregion
 
