@@ -75,15 +75,25 @@ class PdfParser:
         rider_data = re.split(rider_name_pattern, text)  # text data from each rider
         rider_data.pop(0)  # delete all data before the first rider as it only contains circuit information
 
+        # ignore pit in laps
         lap_time_pattern = r"\s[1-2]'\d\d.\d\d\d\s\d{1,2}\s"  # only accept laps that are in the 1-2 min range incl.
-        rider_lap_times = list()
+        rider_lap_times = list()  # must be same length as rider_names_only
         for lap_time_string in rider_data:
+            stint_times = re.split(r"\nP\n", lap_time_string)  # split lap times on pit entries
+            number_of_stints = len(stint_times)
             lap_time_float = list()
-            rider_lap_time_string = re.findall(lap_time_pattern, lap_time_string)
-            for lap in rider_lap_time_string:
-                lap_time_float.append(self._min_to_seconds(self._trim_laptimes(lap)))
+            for i, times in enumerate(stint_times):
+                if i == number_of_stints - 1:  # last stint so get all times
+                    rider_lap_time_string = re.findall(lap_time_pattern, times)
+                else:
+                    # remove the last time as that is pit in
+                    rider_lap_time_string = re.findall(lap_time_pattern, times)[:-1]
+                # rider_lap_time_string = re.findall(lap_time_pattern, lap_time_string)
+                temp_laps = [self._min_to_seconds(self._trim_laptimes(lap)) for lap in rider_lap_time_string]
+                lap_time_float.extend(temp_laps)
             rider_lap_times.append(lap_time_float)
 
+        assert (len(riders_names_only) == len(rider_lap_times), "Rider names do not match up with lap times")
         rider_and_lap_time_dict = dict(zip(riders_names_only, rider_lap_times))
 
         if delete_if_less_than_three:
