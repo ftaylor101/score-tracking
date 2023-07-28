@@ -1,10 +1,11 @@
 import streamlit as st
 import os
 import json
+import requests
 from typing import Dict, Tuple
 from datetime import date, timedelta
 import firebase_admin
-from firebase_admin import credentials, storage, ml
+from firebase_admin import credentials, storage
 from google.cloud.storage import Blob
 
 
@@ -122,14 +123,36 @@ def process_upload(image_to_upload, new_image_name: str) -> bool:
     return success
 
 
+headers = {"Authorization": f"Bearer {st.secrets['huggingface']}"}
+API_URL = "https://api-inference.huggingface.co/models/google/vit-base-patch16-224"
+
 with st.expander("Click here for photo upload"):
+    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    image_name = st.text_input("Image name")
+    tmp_img = "temp_img"
+    if uploaded_file:
+        with open(tmp_img, "wb") as file_to_open:
+            file_to_open.write(uploaded_file.getbuffer())
+        with open(tmp_img, "rb") as file_to_read:
+            img_data = file_to_read.read()
+        response = requests.request("POST", API_URL, headers=headers, data=img_data)
+        output = json.loads(response.content.decode("utf-8"))
+        is_ice_cream = False
+        for obj in output:
+            if "ice cream" in obj['label']:
+                is_ice_cream = True
+        if is_ice_cream:
+            st.write("Well done, I detect some ice cream! You can upload this.")
+        else:
+            st.write(f"Nice picture but no ice cream. I detect a {output[0]['label']}. But you can't upload this. It "
+                     f"needs ice cream.")
     with st.form("upload_image", clear_on_submit=True):
-        uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-        image_name = st.text_input("Image name")
         upload = st.form_submit_button(label="Upload")
 
-if upload and uploaded_file and image_name:
+if upload and uploaded_file and image_name and is_ice_cream:
     image_has_uploaded = process_upload(image_to_upload=uploaded_file, new_image_name=image_name)
+elif upload and uploaded_file and image_name and not is_ice_cream:
+    st.error("NO ICE CREAM!!!")
 # endregion
 
 
