@@ -1,5 +1,6 @@
 import streamlit as st
 import json
+import requests
 import tensorflow as tf
 import plotly.express as px
 from typing import Dict
@@ -232,3 +233,32 @@ if submit_button:
     )
 
     visualise_image(stylized_image_blended)
+
+
+models = [
+    "gpt2",
+    "bert-base-uncased",
+    "google/vit-base-patch16-224",
+    "facebook/bart-large-cnn"
+]
+model_id = st.selectbox("Select model", models)
+API_URL = "https://api-inference.huggingface.co/models/" + model_id
+headers = {"Authorization": f"Bearer {st.secrets['huggingface']}"}
+
+
+def model_query(payload: str):
+    json_data = json.dumps(payload)
+    response = requests.request("POST", API_URL, headers=headers, data=json_data)
+    return json.loads(response.content.decode("utf-8"))
+
+
+with st.form(key="Huggingface"):
+    st.write("Hugging face model use")
+    st.write("This is very experimental as I am learning how to incorporate models hosted on Hugging Face into this "
+             "site and what use it can provide.")
+    query_input = st.text_input("Input query here", value="Tell me something interesting")
+    do_something = st.form_submit_button(label="Click here to do something")
+
+if do_something:
+    query_return = model_query(query_input)
+    st.write(query_return)

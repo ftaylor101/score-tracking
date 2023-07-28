@@ -22,6 +22,10 @@ class PdfRetriever:
             "Moto2": "Moto2",
             "Moto3": "Moto3",
         }
+        self.session_style = {
+            "Old style": ["FP1", "FP2", "FP3", "FP4"],
+            "New style": ["P1", "P2", "FP"]
+        }
 
     @staticmethod
     def __check_url_validity(url: str) -> bool:
@@ -53,17 +57,18 @@ class PdfRetriever:
         :return: Boolean, True if a session exists, otherwise False.
         """
         url_exists = False
+        session_types = self.session_style[session]
         while not url_exists:
-            if session == "Old style":
-                for sess in ["FP1", "FP2", "FP3", "FP4"]:
-                    url_exists = self.__check_url_validity(
-                        url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
-                    )
-            elif session == "New style":
-                for sess in ["P1", "P2", "FP"]:
-                    url_exists = self.__check_url_validity(
-                        url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
-                    )
+            # if session == "Old style":
+            for sess in session_types:
+                url_exists = self.__check_url_validity(
+                    url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
+                )
+            # elif session == "New style":
+            #     for sess in ["P1", "P2", "FP"]:
+            #         url_exists = self.__check_url_validity(
+            #             url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
+            #         )
             else:
                 print("No sessions found")
                 break

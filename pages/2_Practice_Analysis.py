@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 import numpy as np
@@ -24,6 +25,8 @@ if "sessions" not in st.session_state:
     st.session_state["sessions"] = None
 if "current_analysis_df" not in st.session_state:
     st.session_state["current_analysis_df"] = None
+if "original_df" not in st.session_state:
+    st.session_state["original_df"] = None
 # endregion
 
 # region Introduction to page
@@ -47,13 +50,22 @@ def melt_df(df_to_melt: pd.DataFrame, new_columns: List[str]) -> pd.DataFrame:
 
 
 # region Analysis
-def analyse_dataframe(df: pd.DataFrame):
+def analyse_dataframe(full_df: pd.DataFrame):
     st.session_state["in_current_analysis_session"] = True
 
     # remove any short laps where riders take a shortcut to the pits or slow/cool down laps
-    min_lap_time_allowed = df.median().median() * 0.9  # fastest lap is assumed to be only up to 10% faster
-    max_lap_time_allowed = df.median().median() * 1.1  # fastest lap is assumed to be only up to 10% faster
-    df.mask(df < min_lap_time_allowed, inplace=True)
+    upper_tol = st.number_input(
+        "Select maximum lap time",
+        min_value=full_df.median().median(),
+        max_value=full_df.median().median() + 50.0,
+        value=full_df.median().median() + 1.0,
+        step=0.001,
+        format="%.3f")
+    min_lap_time_allowed = full_df.median().median() * 0.9  # fastest lap is assumed to be only up to 10% faster
+    max_lap_time_allowed = upper_tol  # slowest lap used in analysis is set by user
+
+    # make a new filtered dataframe and work with that
+    df = full_df.mask(full_df < min_lap_time_allowed)
     df.mask(df > max_lap_time_allowed, inplace=True)
 
     # get fastest lap for relative comparison purposes
@@ -208,6 +220,37 @@ def analyse_dataframe(df: pd.DataFrame):
     heatmap_fig = px.imshow(new_bc_df, color_continuous_scale='RdBu_r')
     st.plotly_chart(heatmap_fig)
 
+    st.write("Anderson-Darling test")
+    dists = ['norm', 'expon', 'logistic', 'gumbel', 'gumbel_l', 'gumbel_r', 'extreme1', 'weibull_min']
+    with st.form("stats_section"):
+        selected_rider = st.selectbox("Pick a rider", riders)
+        distribution = st.selectbox("Pick a distribution", dists)
+        calc_stat = st.form_submit_button(
+            label="Calculate the AD statistic"
+        )
+    if calc_stat:
+        data = df[selected_rider].dropna()
+        # st.write(data)
+        st.write(f"Distribution = {distribution}")
+        res = stats.anderson(x=data, dist=distribution)
+        st.write(f"statistic = {res.statistic}")
+        st.write(f"critical values = {res.critical_values}")
+        st.write(f"significance levels = {res.significance_level}")
+        result = res.statistic - res.critical_values[-1]
+        if result < 0:
+            st.write(f"Accept null hypothesis that the data came from a {distribution} distribution")
+        else:
+            st.write(f"Reject the null hypothesis")
+
+        ad_fig = plt.figure()
+        ad_ax = res.fit_result.plot(plot_type='hist')
+        ad_fig.add_axes(ad_ax)
+        st.pyplot(ad_fig)
+
+        gompertz = stats.gompertz
+        rv = gompertz.fit(data)
+        st.write(f"gompertz params = {rv}")
+
 
 # endregion
 
@@ -256,6 +299,7 @@ if __name__ == "__main__":
                 tmp_df = parser.parse_pdf(file, delete_if_less_than_three=True)
                 final_df = pd.concat([final_df, tmp_df], ignore_index=True)
             st.session_state["current_analysis_df"] = final_df
+            st.session_state["original_df"] = final_df
         elif not exists:
             st.write("Sessions do not exist")
         else:

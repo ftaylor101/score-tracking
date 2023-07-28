@@ -93,7 +93,6 @@ class PdfParser:
                 lap_time_float.extend(temp_laps)
             rider_lap_times.append(lap_time_float)
 
-        assert (len(riders_names_only) == len(rider_lap_times), "Rider names do not match up with lap times")
         rider_and_lap_time_dict = dict(zip(riders_names_only, rider_lap_times))
 
         if delete_if_less_than_three:
