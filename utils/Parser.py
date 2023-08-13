@@ -108,3 +108,42 @@ class PdfParser:
         rider_and_lap_time_df = pd.DataFrame.from_dict(rider_and_lap_time_dict, orient='index').T
 
         return rider_and_lap_time_df
+
+    @staticmethod
+    def parse_race_results_pdf(file: str) -> pd.DataFrame:
+        """
+        This method accepts a PDF and returns a dataframe with all riders and their points scored.
+
+        :param file: The file path including file name and extension to the race results file.
+        :return: a dataframe
+        """
+        with fitz.Document(file) as doc:
+            text = doc[0].get_text()
+
+        race_time_pattern = r"\d\d'\d\d.\d\d\d"
+        points_data = re.split(race_time_pattern, text)
+        points_dict = dict()
+
+        for i, rider in enumerate(points_data):
+            if "Not classified" in rider:
+                print("No more classified riders")
+                break
+            words = rider.split("\n")
+            rname = words[-4]
+            p_string = points_data[i + 1]
+            p_words = p_string.split("\n")
+            idx = 2 if i == 0 else 3  # cope with no value for gap for the winning rider
+            points_str = p_words[idx]
+            try:
+                points_flt = float(points_str)
+                points_dict[rname] = [points_flt]
+            except ValueError:
+                print(f"No points left in {file}")
+                break
+
+        df = pd.DataFrame.from_dict(points_dict, orient='index', columns=["Points"])
+        df.reset_index(names=["Rider"], inplace=True)
+        df.reset_index(names=["Position"], inplace=True)
+        df = df[["Position", "Points", "Rider"]]
+        df["Position"] = df["Position"] + 1
+        return df

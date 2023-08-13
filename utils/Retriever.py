@@ -24,7 +24,8 @@ class PdfRetriever:
         }
         self.session_style = {
             "Old style": ["FP1", "FP2", "FP3", "FP4"],
-            "New style": ["P1", "P2", "FP"]
+            "New style": ["P1", "P2", "FP"],
+            "Latest style": ["FP1", "PR", "FP2"]
         }
 
     @staticmethod
@@ -47,9 +48,9 @@ class PdfRetriever:
 
         return exist
 
-    def check_sessions_exist(self, year: str, race: str, session: str) -> bool:
+    def check_motogp_practice_sessions_exist(self, year: str, race: str, session: str) -> bool:
         """
-        Uses the arguments given to form a URL and check its validity.
+        Uses the arguments given to form a URL and check the MotoGP practice session validity.
 
         :param year: The year of the desired sessions.
         :param race: The race of the desired sessions.
@@ -59,16 +60,10 @@ class PdfRetriever:
         url_exists = False
         session_types = self.session_style[session]
         while not url_exists:
-            # if session == "Old style":
             for sess in session_types:
                 url_exists = self.__check_url_validity(
                     url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
                 )
-            # elif session == "New style":
-            #     for sess in ["P1", "P2", "FP"]:
-            #         url_exists = self.__check_url_validity(
-            #             url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
-            #         )
             else:
                 print("No sessions found")
                 break
@@ -77,7 +72,7 @@ class PdfRetriever:
 
     def check_race_exist(self, year: str, race: str, category: str) -> bool:
         """
-        Uses the arguments given to form a URL and check its validity.
+        Uses the arguments given to form a URL and check the validity of the results page for the race.
 
         :param year: The year of the desired race.
         :param race: The race's 3-letter code.
@@ -129,23 +124,29 @@ class PdfRetriever:
 
         return file_names
 
-    def retrieve_race_files(self, year: str, race: str, category: str) -> Union[str, None]:
+    def retrieve_race_files(self, year: str, race: str, category: str, session_type: str) -> Union[str, None]:
         """
-        Gets the PDF from the website.
+        Gets the PDF from the website for race pace analysis or race results.
 
         :param year: The year of the desired race.
         :param race: The race of the desired race.
         :param category: The category of the desired race.
+        :param session_type:
+            The type of document retrieved, either race pace ("analysis") or finishing order ("results").
         :return: The pdf name saved locally or None if no analysis file exists.
         """
         race_type = "SPR" if category == "MotoGP Sprint" else "RAC"
         race_class = self.categories[category]
+        if session_type == "analysis":
+            name = "Analysis"
+        else:
+            name = "Classification"
 
         self.year = year
         self.race = race
 
         url = \
-            f"https://resources.motogp.com/files/results/{self.year}/{self.race}/{race_class}/{race_type}/Analysis.pdf"
+            f"https://resources.motogp.com/files/results/{self.year}/{self.race}/{race_class}/{race_type}/{name}.pdf"
         valid_url = self.__check_url_validity(url)
         file_name = None
         if valid_url:
