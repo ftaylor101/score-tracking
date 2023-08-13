@@ -186,14 +186,14 @@ df = cumulative_plot_df.stack().reset_index()
 df.rename(columns={"Player": "Names", "level_1": "Event", 0: "Score"}, inplace=True)
 
 # plotly plotting if wanted
-plot_checkbox = st.checkbox("Plot points")
-if plot_checkbox:
-    player_names = list(df["Names"].unique())
-    people_to_plot = st.multiselect("Select players:", player_names, default=player_names)
-    filtered_df = df[df["Names"].isin(people_to_plot)]
-
-    cumulative_chart_plotly = px.line(filtered_df, x="Event", y="Score", color="Names", markers=True)
-    st.plotly_chart(cumulative_chart_plotly)
+# plot_checkbox = st.checkbox("Plot points")
+# if plot_checkbox:
+#     player_names = list(df["Names"].unique())
+#     people_to_plot = st.multiselect("Select players:", player_names, default=player_names)
+#     filtered_df = df[df["Names"].isin(people_to_plot)]
+#
+#     cumulative_chart_plotly = px.line(filtered_df, x="Event", y="Score", color="Names", markers=True)
+#     st.plotly_chart(cumulative_chart_plotly)
 
 # endregion
 
