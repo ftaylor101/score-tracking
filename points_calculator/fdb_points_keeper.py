@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from scrape_motogp import MotoScraper
+# from scrape_motogp import MotoScraper
 from utils.Parser import PdfParser
 from utils.Retriever import PdfRetriever
 from firestore_management import FirestoreDatabaseManager
@@ -19,7 +19,7 @@ class PointsKeeper:
         Hardcoded files contain replacement riders.
         """
         # todo remove this scraper and get the final standings from PDFs
-        self.moto_scraper = MotoScraper()
+        # self.moto_scraper = MotoScraper()
 
         self.results_getter = PdfParser()
         self.pdf_getter = PdfRetriever()
@@ -185,7 +185,7 @@ class PointsKeeper:
                 try:
                     player_points_total += current_player_scores[race_reference]
                 except KeyError:
-                    continue
+                    pass
             # current_total = current_player_scores["total"]
             player_ref.update({"total": player_points_total})
 
