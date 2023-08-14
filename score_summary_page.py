@@ -22,6 +22,7 @@ st.markdown("The site is **:red[undergoing maintenance]**. I will keep the point
             "temporarily if needed, and the race pace and free practice analysis will be down until I clean up the "
             "backend.")
 
+
 def init_with_service_account(cred_dict: Dict):
     """
     Initialize the Firestore DB client using a service account
