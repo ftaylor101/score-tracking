@@ -103,6 +103,8 @@ class PdfRetriever:
             sessions = ["FP1", "FP2", "FP3", "FP4"]
         elif session == "New style":
             sessions = ["P1", "P2", "FP"]
+        elif session == "Latest style":
+            sessions = ["FP1", "PR", "FP2"]
         else:
             raise ValueError("Session not set correctly")
 
@@ -150,7 +152,7 @@ class PdfRetriever:
         valid_url = self.__check_url_validity(url)
         file_name = None
         if valid_url:
-            download_name = r"../score-tracking/static/" + f"{year}_{race}_{race_class}_{race_type}.pdf"
+            download_name = r"../static/" + f"{year}_{race}_{race_class}_{race_type}.pdf"
             if os.path.isfile(download_name):
                 file_name = download_name
             else:
