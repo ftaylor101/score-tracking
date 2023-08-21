@@ -12,19 +12,18 @@ class RaceResources:
             "ITA": "6_ITA",
             "GER": "7_GER",
             "NED": "8_NED",
-            "KAZ": "9_KAZ",
-            "GBR": "10_GBR",
-            "AUT": "11_AUT",
-            "CAT": "12_CAT",
-            "RSM": "13_RSM",
-            "IND": "14_IND",
-            "JPN": "15_JPN",
-            "INA": "16_INA",
-            "AUS": "17_AUS",
-            "THA": "18_THA",
-            "MAL": "19_MAL",
-            "QAT": "20_QAT",
-            "VAL": "21_VAL"
+            "GBR": "9_GBR",
+            "AUT": "10_AUT",
+            "CAT": "11_CAT",
+            "RSM": "12_RSM",
+            "IND": "13_IND",
+            "JPN": "14_JPN",
+            "INA": "15_INA",
+            "AUS": "16_AUS",
+            "THA": "17_THA",
+            "MAL": "18_MAL",
+            "QAT": "19_QAT",
+            "VAL": "20_VAL"
         }
 
         self.race_number = {
@@ -36,19 +35,18 @@ class RaceResources:
             6: "ITA",
             7: "GER",
             8: "NED",
-            9: "KAZ",
-            10: "GBR",
-            11: "AUT",
-            12: "CAT",
-            13: "RSM",
-            14: "IND",
-            15: "JPN",
-            16: "INA",
-            17: "AUS",
-            18: "THA",
-            19: "MAL",
-            20: "QAT",
-            21: "VAL"
+            9: "GBR",
+            10: "AUT",
+            11: "CAT",
+            12: "RSM",
+            13: "IND",
+            14: "JPN",
+            15: "INA",
+            16: "AUS",
+            17: "THA",
+            18: "MAL",
+            19: "QAT",
+            20: "VAL"
         }
 
     def number_to_name(self, race_number: int) -> str:
