@@ -152,10 +152,10 @@ class PdfRetriever:
         valid_url = self.__check_url_validity(url)
         file_name = None
         if valid_url:
-            download_name = r"../static/" + f"{year}_{race}_{race_class}_{race_type}.pdf"
+            download_name = r"../score-tracking/static/" + f"{year}_{race}_{race_class}_{race_type}_{name}.pdf"
             if os.path.isfile(download_name):
                 file_name = download_name
             else:
-                file_name = wget.download(url, download_name)
+                file_name = wget.download(url=url, out=download_name)
 
         return file_name

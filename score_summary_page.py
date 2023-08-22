@@ -24,10 +24,6 @@ st.markdown("The site is **:red[undergoing maintenance]**. I will keep the point
             "temporarily if needed, and the race pace and free practice analysis will be down until I clean up the "
             "backend.")
 
-st.markdown(":ladybug: In debugging I have found that :red[Riccardo Rossi's] points have not been calculated properly "
-            "This will be fixed and all points updated accordingly. Apologies to those affected, I should write "
-            "less buggy code and actually run some tests. :ladybug:")
-
 
 def init_with_service_account(cred_dict: Dict):
     """
@@ -179,13 +175,6 @@ display_df[("Player", "Player")] = display_df.index
 display_df.index = pd.RangeIndex(1, len(display_df.index) + 1)
 display_df = display_df.droplevel(level=0, axis="columns")
 
-# Reorganise so race results are the last columns
-# summary_columns = \
-#     [(0, "Current week Moto3"), (0, "Current week Moto2"), (0, "Current week MotoGP"), (0, "Current week"),
-#      (0, "Total"), ("Player",)]
-# for col in summary_columns:
-#     display_df = move_column(display_df, col, 0)
-
 # styling the dataframe
 display_df = move_column(display_df, "Player", 0)
 float_cols = display_df.columns[1:]  # Player name column has been set as the first column
@@ -234,12 +223,12 @@ with st.expander("Plot points"):
     st.plotly_chart(cumulative_chart_plotly)
 
 with st.expander("Plot player position progression"):
-    bump_chart_dict = dict()
+    # bump_chart_dict = dict()
     bump_chart_df = deepcopy(cumulative_plot_df)
     cols = cumulative_plot_df.columns
     for column in cols:
         cumulative_plot_df.sort_values(by=[column], ascending=False, inplace=True)
-        bump_chart_dict[column] = pd.Series(cumulative_plot_df.index)
+        # bump_chart_dict[column] = pd.Series(cumulative_plot_df.index)
         bump_chart_df[column] = cumulative_plot_df.index
 
     bump_chart_df.index = range(1, len(cumulative_plot_df) + 1)
