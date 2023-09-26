@@ -314,6 +314,6 @@ class PointsKeeper:
 
 if __name__ == "__main__":
     pk = PointsKeeper()
-    race = 10
+    race = 13
     pk.update_points(race_num=race, year=2023, final_race=False)
     # pk.summarise_points(race_num=race)
