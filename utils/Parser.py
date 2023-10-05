@@ -84,10 +84,19 @@ class PdfParser:
             lap_time_float = list()
             for i, times in enumerate(stint_times):
                 if i == number_of_stints - 1:  # last stint so get all times
-                    rider_lap_time_string = re.findall(lap_time_pattern, times)
+                    # check for unfinished laps and ignore them
+                    unfinished_idx = times.find("unfinished")
+                    if unfinished_idx != -1:
+                        times = times[:unfinished_idx]
+                    # ignore out lap
+                    rider_lap_time_string = re.findall(lap_time_pattern, times)[1:]
                 else:
-                    # remove the last time as that is pit in
-                    rider_lap_time_string = re.findall(lap_time_pattern, times)[:-1]
+                    # check for unfinished laps and ignore them
+                    unfinished_idx = times.find("unfinished")
+                    if unfinished_idx != -1:
+                        times = times[:unfinished_idx]
+                    # remove the first and last times as they are out lap and pit in lap
+                    rider_lap_time_string = re.findall(lap_time_pattern, times)[1:-1]
                 # rider_lap_time_string = re.findall(lap_time_pattern, lap_time_string)
                 temp_laps = [self._min_to_seconds(self._trim_laptimes(lap)) for lap in rider_lap_time_string]
                 lap_time_float.extend(temp_laps)
