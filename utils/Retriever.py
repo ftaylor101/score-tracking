@@ -23,9 +23,9 @@ class PdfRetriever:
             "Moto3": "Moto3",
         }
         self.session_style = {
-            "Old style": ["FP1", "FP2", "FP3", "FP4"],
-            "New style": ["P1", "P2", "FP"],
-            "Latest style": ["FP1", "PR", "FP2"]
+            "Old style": ["FP1", "FP2", "FP3", "FP4", "WUP"],
+            "New style": ["P1", "P2", "FP", "WUP"],
+            "Latest style": ["FP1", "PR", "FP2", "WUP"]
         }
 
     @staticmethod
@@ -64,8 +64,9 @@ class PdfRetriever:
                 url_exists = self.__check_url_validity(
                     url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
                 )
+                print(f"{year}-{race}-{sess} exist: {url_exists}")
             else:
-                print("No sessions found")
+                print(f"No sessions found for {sess}")
                 break
 
         return url_exists
@@ -99,13 +100,9 @@ class PdfRetriever:
         :param session: The format of the desired sessions.
         :return: The pdf name saved locally
         """
-        if session == "Old style":
-            sessions = ["FP1", "FP2", "FP3", "FP4"]
-        elif session == "New style":
-            sessions = ["P1", "P2", "FP"]
-        elif session == "Latest style":
-            sessions = ["FP1", "PR", "FP2"]
-        else:
+        try:
+            sessions = self.session_style[session]
+        except ValueError:
             raise ValueError("Session not set correctly")
 
         self.year = year
@@ -139,10 +136,7 @@ class PdfRetriever:
         """
         race_type = "SPR" if category == "MotoGP Sprint" else "RAC"
         race_class = self.categories[category]
-        if session_type == "analysis":
-            name = "Analysis"
-        else:
-            name = "Classification"
+        name = "Analysis" if session_type == "analysis" else "Classification"
 
         self.year = year
         self.race = race

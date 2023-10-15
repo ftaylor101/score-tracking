@@ -51,6 +51,11 @@ def analyse_dataframe(the_race_df: pd.DataFrame):
     """
     st.session_state["in_current_analysis_session"] = True
 
+    try:
+        the_race_df.drop(labels=["Session"], axis="columns", inplace=True)
+    except KeyError as ke:
+        st.warning(f"{ke} error but everything should work anyway.")
+
     show_race_data = st.checkbox("Show race raw data")
     if show_race_data:
         st.dataframe(the_race_df)
@@ -69,11 +74,20 @@ def analyse_dataframe(the_race_df: pd.DataFrame):
     gap_to_winner_plotly = px.line(melt_cum_gap_df, x="Lap", y="Gap", color="Rider", markers=True)
     st.plotly_chart(gap_to_winner_plotly)
 
-    st.write("This box plot shows the spread of a rider's lap times. The smaller the box the more consistent they "
+    st.write("This plot shows the spread of a rider's lap times. The smaller the box the more consistent they "
              "are. The lower the box the faster they are. Outliers such as the first lap are shown by dots. The middle "
-             "50% of lap times are covered by the box.")
-    plotly_box_race_summary_fig = px.box(the_race_df, y=the_race_df.columns, hover_data=[the_race_df.index])
-    st.plotly_chart(plotly_box_race_summary_fig)
+             "50% of lap times are covered by the box. Actual times and lap time distribution is shown in the violin "
+             "plot. (Select an area on the plot to zoom in.)")
+
+    plot_type = st.radio(
+        label="Select plot type",
+        options=["Box plot", "Violin plot"]
+    )
+    if plot_type == "Violin plot":
+        plotly_race_summary_fig = px.violin(the_race_df, y=the_race_df.columns, box=True, points="all")
+    else:
+        plotly_race_summary_fig = px.box(the_race_df, y=the_race_df.columns, hover_data=[the_race_df.index])
+    st.plotly_chart(plotly_race_summary_fig)
 
 # endregion
 
@@ -87,7 +101,7 @@ if __name__ == "__main__":
 
     races = [
         "QAT", "INA", "ARG", "AME", "POR", "SPA", "FRA", "ITA", "CAT", "GER", "NED", "GBR", "AUT", "RSM", "ARA", "JPN",
-        "THA", "AUS", "MAL", "VAL", "IND"
+        "THA", "AUS", "MAL", "VAL", "IND", "INA"
     ]
     with st.form('my_form'):
         race_category = st.radio("Select race", ["MotoGP Race", "MotoGP Sprint", "Moto2", "Moto3"])
@@ -113,7 +127,7 @@ if __name__ == "__main__":
             st.session_state["category"] = race_category
             final_df = pd.DataFrame()
             if race_file_name:
-                race_df = parser.parse_pdf(race_file_name, delete_if_less_than_three=False)
+                race_df = parser.parse_pdf(race_file_name, delete_if_less_than_three=False, is_race=True)
                 st.session_state["current_race_df"] = race_df
             else:
                 st.error("Something went wrong parsing the race data.")

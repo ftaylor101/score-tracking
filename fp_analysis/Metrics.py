@@ -2,6 +2,8 @@ import numpy as np
 
 from sklearn.neighbors import KernelDensity
 from scipy.special import kl_div, softmax
+from scipy import stats
+from typing import Tuple
 
 
 class MetricsCalculator:
@@ -52,4 +54,20 @@ class MetricsCalculator:
         assert isinstance(q, np.ndarray)
 
         return sum(kl_div(p, q))
+
+    @staticmethod
+    def relative_frequency_histogram(arr: np.ndarray, bin_bounds: Tuple, num_of_bins: int):
+        """
+        Wrapper around stats.relfreq to create a relative frequency histogram for a given dataset and the bins.
+
+        :param arr: The dataset for which to find the frequency.
+        :param bin_bounds: The lower and upper bound of the bins.
+        :param num_of_bins: The number of bins.
+        :return: A stats.relfreq object containing frequency data for each bin.
+        """
+        return stats.relfreq(
+            a=arr,
+            defaultreallimits=bin_bounds,
+            numbins=num_of_bins
+        )
 

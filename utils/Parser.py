@@ -49,13 +49,14 @@ class PdfParser:
         split_lap = lap_time.split("\n")
         return split_lap[1]
 
-    def parse_pdf(self, file: str, delete_if_less_than_three: bool) -> pd.DataFrame:
+    def parse_pdf(self, file: str, delete_if_less_than_three: bool, is_race: bool) -> pd.DataFrame:
         """
         This method accepts a PDF and returns a dataframe with all riders and their lap times and tyre information.
 
         :param file: The file path including file name and extension to the practice session file.
         :param delete_if_less_than_three:
             Delete the rider's lap times if only less than three laps exist. Only useful for practice sessions.
+        :param is_race: If the session is a race then use all laps, do not ignore in/out laps.
         :return: a dataframe
         """
         with fitz.Document(file) as doc:
@@ -88,15 +89,17 @@ class PdfParser:
                     unfinished_idx = times.find("unfinished")
                     if unfinished_idx != -1:
                         times = times[:unfinished_idx]
-                    # ignore out lap
-                    rider_lap_time_string = re.findall(lap_time_pattern, times)[1:]
+                    # ignore out lap if it is a practise session, not if it is a race
+                    rider_lap_time_string = \
+                        re.findall(lap_time_pattern, times) if is_race else re.findall(lap_time_pattern, times)[1:]
                 else:
                     # check for unfinished laps and ignore them
                     unfinished_idx = times.find("unfinished")
                     if unfinished_idx != -1:
                         times = times[:unfinished_idx]
-                    # remove the first and last times as they are out lap and pit in lap
-                    rider_lap_time_string = re.findall(lap_time_pattern, times)[1:-1]
+                    # remove the first and last times as they are out lap and pit in lap unless it is a race
+                    rider_lap_time_string = \
+                        re.findall(lap_time_pattern, times) if is_race else re.findall(lap_time_pattern, times)[1:-1]
                 # rider_lap_time_string = re.findall(lap_time_pattern, lap_time_string)
                 temp_laps = [self._min_to_seconds(self._trim_laptimes(lap)) for lap in rider_lap_time_string]
                 lap_time_float.extend(temp_laps)
@@ -115,6 +118,7 @@ class PdfParser:
                     del rider_and_lap_time_dict[rider_name]
 
         rider_and_lap_time_df = pd.DataFrame.from_dict(rider_and_lap_time_dict, orient='index').T
+        rider_and_lap_time_df["Session"] = file.split("_")[-1][:-4]
 
         return rider_and_lap_time_df
 
