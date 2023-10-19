@@ -48,7 +48,7 @@ class PdfRetriever:
 
         return exist
 
-    def check_motogp_practice_sessions_exist(self, year: str, race: str, session: str) -> bool:
+    def check_motogp_practice_sessions_exist(self, year: int, race: str, session: str) -> bool:
         """
         Uses the arguments given to form a URL and check the MotoGP practice session validity.
 
@@ -71,7 +71,7 @@ class PdfRetriever:
 
         return url_exists
 
-    def check_race_exist(self, year: str, race: str, category: str) -> bool:
+    def check_race_exist(self, year: int, race: str, category: str) -> bool:
         """
         Uses the arguments given to form a URL and check the validity of the results page for the race.
 
@@ -91,7 +91,7 @@ class PdfRetriever:
 
         return url_exists
 
-    def retrieve_practice_files(self, year: str, race: str, session: str) -> List[str]:
+    def retrieve_practice_files(self, year: int, race: str, session: str) -> List[str]:
         """
         Gets the PDF from the website.
 
@@ -123,7 +123,7 @@ class PdfRetriever:
 
         return file_names
 
-    def retrieve_race_files(self, year: str, race: str, category: str, session_type: str) -> Union[str, None]:
+    def retrieve_race_files(self, year: int, race: str, category: str, session_type: str) -> Union[str, None]:
         """
         Gets the PDF from the website for race pace analysis or race results.
 
