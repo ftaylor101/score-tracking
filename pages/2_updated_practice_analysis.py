@@ -62,7 +62,7 @@ def visualise_data(full_df: pd.DataFrame):
 
     # with st.expander("See all rider summary plots"):
     with_sessions_df = data_wrangler.horizontally_concat_dataframes(df, sessions)
-    with_sessions_melt_df = data_wrangler.melt(with_sessions_df)
+    with_sessions_melt_df = data_wrangler.melt_on_session(with_sessions_df)
 
     plot_colours = st.radio(
         label="Choose what the colours represent:",
@@ -95,7 +95,7 @@ def visualise_data(full_df: pd.DataFrame):
         # pdf_fig = data_wrangler.plotly_distribution_plot(hist_data, selected_riders, False)
         # st.plotly_chart(pdf_fig)
 
-        rider_laps_melt = data_wrangler.melt(rider_laps)
+        rider_laps_melt = data_wrangler.melt_on_session(rider_laps)
         plotly_strip_select_riders_fig = data_wrangler.plotly_strip_chart(
             rider_laps_melt, "LapTimes", "Riders", "Session"
         )

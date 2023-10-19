@@ -21,6 +21,23 @@ class DataWrangler:
         self.pdf_parser = PdfParser()
         self.metrics_calculator = MetricsCalculator()
 
+    def get_race(self, year: int, race: str, category: str) -> Union[pd.DataFrame, None]:
+        """
+        A method to check if a race exists, retrieves it and parses the file to extract all lap times.
+
+        :param year: The year of the desired race.
+        :param race: The race 3-letter code.
+        :param category: The race category, MotoGP, Moto2 etc.
+        :return: The dataframe with all lap times from all riders.
+        """
+        exist = self.pdf_retriever.check_race_exist(year, race, category)
+        out = None
+        if exist:
+            race_file_name = self.pdf_retriever.retrieve_race_files(year, race, category, "analysis")
+            if race_file_name:
+                out = self.pdf_parser.parse_pdf(race_file_name, delete_if_less_than_three=False, is_race=True)
+        return out
+
     def get_motogp_practice_sessions(self, year: int, race: str, session: str) -> Union[pd.DataFrame, None]:
         """
         A method to check which sessions exist, retrieves them and parses the files to extract all lap times.
@@ -103,9 +120,14 @@ class DataWrangler:
         return df, col_names
 
     @staticmethod
-    def melt(df: pd.DataFrame) -> pd.DataFrame:
+    def melt_on_session(df: pd.DataFrame) -> pd.DataFrame:
         """A helper method to melt a dataframe."""
         return df.melt(id_vars="Session", var_name="Riders", value_name="LapTimes").dropna()
+
+    @staticmethod
+    def melt_on_lap(df: pd.DataFrame, values: List) -> pd.DataFrame:
+        """A helper method to melt a dataframe around the lap variable (represented by index)."""
+        return df.melt(id_vars=["index"], value_vars=values)
 
     @staticmethod
     def filter_on_columns(df: pd.DataFrame, column_names: List[str]) -> pd.DataFrame:
@@ -116,6 +138,11 @@ class DataWrangler:
     def get_column_names(df: pd.DataFrame) -> pd.Index:
         """A helper method to return the column names of a dataframe."""
         return df.columns
+
+    @staticmethod
+    def rename_columns(df: pd.DataFrame, new_names: Dict) -> pd.DataFrame:
+        """A helper method to rename the columns of dataframe."""
+        return df.rename(columns=new_names)
 
     @staticmethod
     def dataframe_from_dictionary(data_dict: Dict) -> pd.DataFrame:
@@ -133,6 +160,21 @@ class DataWrangler:
         for col in column_names:
             out_list.append(df[col].dropna().values)
         return out_list
+
+    @staticmethod
+    def values_of_first_column(df: pd.DataFrame) -> pd.Series:
+        """A helper method to get the values of the first column."""
+        return df[df.columns[0]]
+
+    @staticmethod
+    def gap_between_column_and_dataframe(df: pd.DataFrame, column: pd.Series) -> pd.DataFrame:
+        """A helper method to find the difference between a series and each column of a dataframe."""
+        out_df = pd.DataFrame()
+        for col in df.columns:
+            out_df[col] = column - df[col]
+        cumulative_out_df = out_df.cumsum()
+        cumulative_out_df.reset_index(inplace=True)
+        return cumulative_out_df
 
     @staticmethod
     def plotly_strip_chart(df: pd.DataFrame, x_name: str, y_name: str, colour: str):
@@ -153,6 +195,11 @@ class DataWrangler:
         fig = ff.create_distplot(data, labels, show_hist=show_histogram)
         fig.update_layout(title='Probability Density Function')
         return fig
+
+    @staticmethod
+    def plotly_standard_violin(df: pd.DataFrame, y_values: List[float]):
+        """A helper method to make a violin plot for all entries in the dataframe."""
+        return px.violin(df, y=y_values, box=True, points="all")
 
     @staticmethod
     def plotly_stacked_violin_figure(df: pd.DataFrame, labels: List[str]):
@@ -177,6 +224,11 @@ class DataWrangler:
     def plotly_ecdf_plot(df: pd.DataFrame, x_values: List[str]):
         """A helper method to plot an empirical cumulative distribution function for the given x values."""
         return px.ecdf(df, x=x_values)
+
+    @staticmethod
+    def plotly_line_chart(df: pd.DataFrame, x_values: str, y_values: str, colour: str):
+        """A helper method to create a plotly line chart with markers."""
+        return px.line(df, x=x_values, y=y_values, color=colour, markers=True)
 
     def relative_freq_hist_calculation(self, df: pd.DataFrame, low_bin: float, high_bin: float, bin_num: int) -> Dict:
         """A helper method to find the relative frequency of each riders' laps."""
@@ -207,48 +259,69 @@ class DataWrangler:
 
 if __name__ == "__main__":
     dw = DataWrangler()
+    # year = 2023
+    # race = "SPA"
+    # session = "New style"
+    # practice_df = dw.get_motogp_practice_sessions(year, race, session)
+    # race_df = dw.get_race_pace_for_practice_comparison(year, race)
+    # combined_df = dw.vertically_concat_dataframes(practice_df, race_df)
+    #
+    # sess_df = dw.copy_df(combined_df["Session"])
+    # data_df = dw.drop_column(combined_df, "Session")
+    #
+    # med_value = dw.median_of_all_columns(data_df)
+    # min_lap = med_value * 0.9
+    # max_lap = med_value * 1.3
+    # masked_df = dw.mask_df(data_df, min_lap, max_lap)
+    #
+    # fastest_lap, fastest_rider = dw.minimum_of_all_columns(masked_df)
+    # print(f"Fastest lap was {fastest_lap} by {fastest_rider}")
+    #
+    # sorted_df, riders = dw.sort_by_median(masked_df)
+    #
+    # with_sess_df = dw.horizontally_concat_dataframes(sorted_df, sess_df)
+    #
+    # melt_with_sess_df = dw.melt(with_sess_df)
+    #
+    # plotly_strip_fig = dw.plotly_strip_chart(melt_with_sess_df, "LapTimes", "Riders", "Session")
+    # # plotly_strip_fig.show()
+    #
+    # plotly_box_fig = dw.plotly_box_plot(sorted_df)
+    # # plotly_box_fig.show()
+    #
+    # selected_riders = dw.get_column_names(sorted_df)
+    # hist_data = dw.make_histogram_data(sorted_df, selected_riders)
+    # pdf_fig = dw.plotly_distribution_plot(hist_data, selected_riders, False)
+    # # pdf_fig.show()
+    #
+    # low_bin = 96.6
+    # high_bin = 103.577
+    # num_bin = 28
+    #
+    # rrl = dw.relative_freq_hist_calculation(sorted_df, low_bin, high_bin, num_bin)
+    # rc = dw.bhattacharyya_coefficients(rrl)
+    # new_df = dw.dataframe_from_dictionary(rc)
+    # heatmap = dw.plotly_heatmap(new_df)
+    # heatmap.show()
+
     year = 2023
-    race = "SPA"
-    session = "New style"
-    practice_df = dw.get_motogp_practice_sessions(year, race, session)
-    race_df = dw.get_race_pace_for_practice_comparison(year, race)
-    combined_df = dw.vertically_concat_dataframes(practice_df, race_df)
+    race = "INA"
+    category = "Moto2"
+    raw_df = dw.get_race(year, race, category)
+    data_df = dw.drop_column(raw_df, "Session")
 
-    sess_df = dw.copy_df(combined_df["Session"])
-    data_df = dw.drop_column(combined_df, "Session")
+    winner = dw.values_of_first_column(data_df)
+    gap_df = dw.gap_between_column_and_dataframe(data_df, winner)
+    melt_gap_df = dw.melt_on_lap(gap_df, list(dw.get_column_names(data_df)))
+    melt_gap_df = dw.rename_columns(melt_gap_df, {"index": "Lap", "variable": "Rider", "value": "Gap"})
+    line_fig = dw.plotly_line_chart(melt_gap_df, "Lap", "Gap", "Rider")
+    line_fig.show()
 
-    med_value = dw.median_of_all_columns(data_df)
-    min_lap = med_value * 0.9
-    max_lap = med_value * 1.3
-    masked_df = dw.mask_df(data_df, min_lap, max_lap)
+    violin_fig = dw.plotly_standard_violin(data_df, list(dw.get_column_names(data_df)))
+    violin_fig.show()
 
-    fastest_lap, fastest_rider = dw.minimum_of_all_columns(masked_df)
-    print(f"Fastest lap was {fastest_lap} by {fastest_rider}")
+    box_fig = dw.plotly_box_plot(data_df)
+    box_fig.show()
 
-    sorted_df, riders = dw.sort_by_median(masked_df)
-
-    with_sess_df = dw.horizontally_concat_dataframes(sorted_df, sess_df)
-
-    melt_with_sess_df = dw.melt(with_sess_df)
-
-    plotly_strip_fig = dw.plotly_strip_chart(melt_with_sess_df, "LapTimes", "Riders", "Session")
-    # plotly_strip_fig.show()
-
-    plotly_box_fig = dw.plotly_box_plot(sorted_df)
-    # plotly_box_fig.show()
-
-    selected_riders = dw.get_column_names(sorted_df)
-    hist_data = dw.make_histogram_data(sorted_df, selected_riders)
-    pdf_fig = dw.plotly_distribution_plot(hist_data, selected_riders, False)
-    # pdf_fig.show()
-
-    low_bin = 96.6
-    high_bin = 103.577
-    num_bin = 28
-
-    rrl = dw.relative_freq_hist_calculation(sorted_df, low_bin, high_bin, num_bin)
-    rc = dw.bhattacharyya_coefficients(rrl)
-    new_df = dw.dataframe_from_dictionary(rc)
-    heatmap = dw.plotly_heatmap(new_df)
-    heatmap.show()
+    a = 1
 
