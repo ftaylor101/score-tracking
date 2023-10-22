@@ -64,6 +64,9 @@ def visualise_data(full_df: pd.DataFrame):
     with_sessions_df = data_wrangler.horizontally_concat_dataframes(df, sessions)
     with_sessions_melt_df = data_wrangler.melt_on_session(with_sessions_df)
 
+    st.write("The plot below shows all the lap times recorded by a rider for all available sessions. Clicking on the "
+             "rider name on the right hand side hides the data, double clicking shows only their data. Clicking on "
+             "other riders will add/remove their data.")
     plot_colours = st.radio(
         label="Choose what the colours represent:",
         options=["Colour by rider", "Colour by session"]
@@ -74,6 +77,11 @@ def visualise_data(full_df: pd.DataFrame):
     )
     st.plotly_chart(plotly_strip_summary_fig)
 
+    st.write("The box plot below shows the spread of the data. If the rider's laps are arranged from fastest to "
+             "slowest with times shown on the vertical axis. The box represents the middle 50% of laps, the line in "
+             "the middle of the box is the median, which is the middle lap in terms of lap time. 50% of the rider's "
+             "laps will be faster than this, and 50% will be slower. Points are outliers, so either a particularly "
+             "quick or slow lap.")
     plotly_box_summary_fig = data_wrangler.plotly_box_plot(df)
     st.plotly_chart(plotly_box_summary_fig)
 
@@ -105,6 +113,10 @@ def visualise_data(full_df: pd.DataFrame):
         # plotly_box_fig = data_wrangler.plotly_box_plot(filtered_df)
         # st.plotly_chart(plotly_box_fig)
 
+        st.write("The violin plot below shows a little more data than the summarising box plot in the section above. "
+                 "The curved line shows the distribution of laps, so a peak (though the distribution is shown "
+                 "vertically) means more laps are concentrated around this lap time. A wider, flatter curve means "
+                 "the laps are spread across a larger range.")
         violin_fig = data_wrangler.plotly_stacked_violin_figure(rider_laps_melt, selected_riders)
         st.plotly_chart(violin_fig)
 
@@ -121,6 +133,8 @@ def visualise_data(full_df: pd.DataFrame):
     st.write("A larger overlap leads to a higher similarity score due to the reduced granularity in the comparison. "
              "However, if the bin width is too small then it will decrease the ability to compare laps between "
              "riders.")
+    st.write("Tyres are not yet taken into account, so a rider setting a number of fast laps on brand new soft tyres "
+             "might show a lot of similarity to a faster rider using harder, more worn tyres.")
     # Using the fastest lap, bin width and a tolerance, reduce each riders' set of laps to a useful set
     # From that set, calculate the relative frequency and from there the Bhattacharyya coefficient
     lap_tolerance = st.number_input(
