@@ -1,5 +1,4 @@
 from typing import List, Tuple, Dict
-# from scrape_motogp import MotoScraper
 from utils.Parser import PdfParser
 from utils.Retriever import PdfRetriever
 from utils.RaceNames import RaceResources
@@ -19,9 +18,6 @@ class PointsKeeper:
         """
         Hardcoded file contain replacement riders.
         """
-        # todo remove this scraper and get the final standings from PDFs
-        # self.moto_scraper = MotoScraper()
-
         self.results_getter = PdfParser()
         self.pdf_getter = PdfRetriever()
         self.fdb_manager = FirestoreDatabaseManager()
@@ -46,6 +42,7 @@ class PointsKeeper:
 
         race_results = {k: v for k, v in all_race_results.items() if isinstance(v, pd.DataFrame)}
         categories = ("motogp", "motogp_sprint", "moto2", "moto3")
+        available_categories = tuple(race_results.keys())
         self._score_has_been_updated = list()  # used to avoid multiple updates to the same rider
 
         # find the points each rider scores for the player and assign scores to each player
@@ -55,37 +52,43 @@ class PointsKeeper:
             all_points = list()
             for single_category in categories:
                 replacements = self.replacement_riders[single_category]
-                points = race_results[single_category]
+                try:
+                    points = race_results[single_category]
+                except KeyError:
+                    pass
                 player_picks = self._get_category_picks(single_category, picks)  # returns a list of 3 names
                 if single_category != "motogp_sprint":
                     points_store = dict()
                 for rider in player_picks:
-                    try:
-                        rider_points = float(points[points["Rider"].str.
-                                             contains(rider, na=False, case=False)]["Points"].iloc[0])
-                    except IndexError:
-                        # do replacement rider check here
-                        if rider in replacements.keys():
-                            new_rider = replacements[rider]
-                            if new_rider not in player_picks:
-                                try:
-                                    rider_points = float(points[points["Rider"].str.
-                                                         contains(new_rider, na=False, case=False)]["Points"].iloc[0])
-                                except IndexError:
-                                    rider_points = 0
-                            elif new_rider in player_picks:
-                                # if new_rider in replacements.keys():  # 'if' not needed as impossible situation
-                                new_replacement_rider = replacements[new_rider]
-                                try:
-                                    rider_points = float(points[points["Rider"].str.
-                                                         contains(new_replacement_rider, na=False, case=False)]
-                                                         ["Points"].iloc[0])
-                                except IndexError:
+                    if single_category not in available_categories:
+                        rider_points = 0
+                    else:
+                        try:
+                            rider_points = float(points[points["Rider"].str.
+                                                 contains(rider, na=False, case=False)]["Points"].iloc[0])
+                        except IndexError:
+                            # do replacement rider check here
+                            if rider in replacements.keys():
+                                new_rider = replacements[rider]
+                                if new_rider not in player_picks:
+                                    try:
+                                        rider_points = float(points[points["Rider"].str.
+                                                             contains(new_rider, na=False, case=False)]["Points"].iloc[0])
+                                    except IndexError:
+                                        rider_points = 0
+                                elif new_rider in player_picks:
+                                    # if new_rider in replacements.keys():  # 'if' not needed as impossible situation
+                                    new_replacement_rider = replacements[new_rider]
+                                    try:
+                                        rider_points = float(points[points["Rider"].str.
+                                                             contains(new_replacement_rider, na=False, case=False)]
+                                                             ["Points"].iloc[0])
+                                    except IndexError:
+                                        rider_points = 0
+                                else:
                                     rider_points = 0
                             else:
                                 rider_points = 0
-                        else:
-                            rider_points = 0
                     if single_category == "motogp_sprint":
                         points_store[rider] = points_store[rider] + rider_points
                     else:
@@ -179,7 +182,7 @@ class PointsKeeper:
         file_names = dict()
         for moto_class in ["Moto3", "Moto2", "MotoGP Sprint", "MotoGP Race"]:
             fname = self.pdf_getter.retrieve_race_files(
-                year=str(year),
+                year=year,
                 race=race_code,
                 category=moto_class,
                 session_type="results"
@@ -203,15 +206,8 @@ class PointsKeeper:
         Args:
             year: The year for which to calculate bonus points.
         """
-        # todo update the way to get the points
-        with self.moto_scraper as ms:
-            tmp_final_standings = {
-                "motogp": ms.scrape_final_standings(year=f"{year}", category="MotoGP"),
-                "moto2": ms.scrape_final_standings(year=f"{year}", category="Moto2"),
-                "moto3": ms.scrape_final_standings(year=f"{year}", category="Moto3")
-            }
-        final_standings = {k: v for k, v in tmp_final_standings.items() if isinstance(v, pd.DataFrame)}
-
+        with open("final_standings.json", "r") as json_file:
+            final_standings = json.load(json_file)
         categories = list(final_standings.keys())
 
         # assign scores for each player
@@ -223,19 +219,18 @@ class PointsKeeper:
                 champ_standings = final_standings[single_category]
                 player_picks = self._get_category_picks(single_category, picks)  # returns a list of 3 names
                 for idx in range(len(player_picks)):
-                    if player_picks[idx] == champ_standings["Rider"].iloc[idx]:
+                    if player_picks[idx] == champ_standings[idx]:
                         self._insert_bonus_point(bonus=50, player=name, rider=player_picks[idx])
                         thirty_bonus_tracker.append(False)
                         print(f"50 points for {name} with {player_picks[idx]} in "
-                              f"{champ_standings['Position'].iloc[idx]} place")
-                    elif champ_standings["Rider"].str.contains(player_picks[idx]).any():
+                              f"position {idx + 1} ")
+                    elif player_picks[idx] in champ_standings:
                         thirty_bonus_tracker.append(True)
                     else:
                         thirty_bonus_tracker.append(False)
 
                 if all(thirty_bonus_tracker):
-                    for rider in player_picks:
-                        self._insert_bonus_point(bonus=10, player=name, rider=rider)
+                    self._insert_bonus_point(bonus=30, player=name, rider=rider)
                     print(f"Congrats - 30 bonus points for {name} in {single_category}")
                 else:
                     print(f"No 30 bonus points for {name} in {single_category}")
@@ -314,6 +309,6 @@ class PointsKeeper:
 
 if __name__ == "__main__":
     pk = PointsKeeper()
-    race = 15
-    pk.update_points(race_num=race, year=2023, final_race=False)
+    race = 19
+    pk.update_points(race_num=race, year=2023, final_race=True)
     # pk.summarise_points(race_num=race)
