@@ -162,7 +162,9 @@ score_df.rename(
 )
 
 st.write("Final points with bonus points")
-st.dataframe(score_df)
+final_points_df = deepcopy(score_df)
+final_points_df["Total (with bonues)"] = final_points_df.sum(axis=1)
+st.dataframe(final_points_df)
 
 # organising the dataframe
 to_remove = [(0, "bonus_30"), (0, "bonus_50")]
