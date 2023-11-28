@@ -57,6 +57,13 @@ def highlight_column(x: pd.DataFrame):
     return tmp_df
 
 
+def highlight_finals_column(x: pd.DataFrame):
+    """Highlight a particular column of a dataframe."""
+    r = f"background-color: #ff9999"
+    tmp_df = pd.DataFrame('', index=x.index, columns=x.columns)
+    tmp_df.loc[:, "Total (with bonuses)"] = r
+    return tmp_df
+
 def get_race_number() -> int:
     """
     Function to retrieve the current race number in the database.
@@ -161,10 +168,19 @@ score_df.rename(
     inplace=True
 )
 
-st.write("Final points with bonus points")
-final_points_df = deepcopy(score_df)
-final_points_df["Total (with bonues)"] = final_points_df.sum(axis=1)
-st.dataframe(final_points_df)
+# st.write("Final points with bonus points")
+# final_points_df = deepcopy(score_df)
+# final_points_df = final_points_df.drop(columns=[(0, "Total")])
+# final_points_df[(0, "Total (with bonuses)")] = final_points_df.sum(axis=1)
+# final_points_df = final_points_df.reindex(columns=sorted(final_points_df.columns))
+# final_points_df[("Player", "Player")] = final_points_df.index
+# final_points_df.index = pd.RangeIndex(1, len(final_points_df.index) + 1)
+# final_points_df = final_points_df.droplevel(level=0, axis="columns")
+# final_points_df = final_points_df.drop(columns=["Current week", "Current week Moto2", "Current week Moto3", "Current week MotoGP"])
+# final_points_df = move_column(final_points_df, "Player", 0)
+# # final_points_df.apply(highlight_finals_column)
+#
+# st.dataframe(final_points_df)
 
 # organising the dataframe
 to_remove = [(0, "bonus_30"), (0, "bonus_50")]
