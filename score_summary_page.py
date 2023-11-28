@@ -161,6 +161,9 @@ score_df.rename(
     inplace=True
 )
 
+st.write("Final points with bonus points")
+st.dataframe(score_df)
+
 # organising the dataframe
 to_remove = [(0, "bonus_30"), (0, "bonus_50")]
 display_df = score_df.drop(columns=to_remove)
