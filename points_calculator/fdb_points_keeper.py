@@ -178,22 +178,31 @@ class PointsKeeper:
         """
         race_code = self.race_resources.race_number[race_num]
 
+        # some setup
+        moto_class_and_race_types = [
+            ("Moto3", "RAC"),
+            ("Moto2", "RAC"),
+            ("MotoGP", "SPR"),
+            ("MotoGP", "RAC")
+        ]
+
         # get race result pdfs
         file_names = dict()
-        for moto_class in ["Moto3", "Moto2", "MotoGP Sprint", "MotoGP Race"]:
+        for moto_class_and_race in moto_class_and_race_types:
             fname = self.pdf_getter.retrieve_race_files(
+                category=moto_class_and_race[0],
                 year=year,
                 race=race_code,
-                category=moto_class,
-                session_type="results"
+                race_type=moto_class_and_race[1],
+                data_type="results"
             )
-            file_names[moto_class] = fname
+            file_names[moto_class_and_race[0] + moto_class_and_race[1]] = fname
 
         race_results = {
-            "motogp": self.results_getter.parse_race_results_pdf(file_names["MotoGP Race"]),
-            "motogp_sprint": self.results_getter.parse_race_results_pdf(file_names["MotoGP Sprint"]),
-            "moto2": self.results_getter.parse_race_results_pdf(file_names["Moto2"]),
-            "moto3": self.results_getter.parse_race_results_pdf(file_names["Moto3"])
+            "motogp": self.results_getter.parse_race_results_pdf(file_names["MotoGPRAC"]),
+            "motogp_sprint": self.results_getter.parse_race_results_pdf(file_names["MotoGPSPR"]),
+            "moto2": self.results_getter.parse_race_results_pdf(file_names["Moto2RAC"]),
+            "moto3": self.results_getter.parse_race_results_pdf(file_names["Moto3RAC"])
         }
 
         return race_results
@@ -206,7 +215,7 @@ class PointsKeeper:
         Args:
             year: The year for which to calculate bonus points.
         """
-        with open("final_standings.json", "r") as json_file:
+        with open("final_standings.json", encoding="utf-8") as json_file:
             final_standings = json.load(json_file)
         categories = list(final_standings.keys())
 
@@ -220,7 +229,7 @@ class PointsKeeper:
                 player_picks = self._get_category_picks(single_category, picks)  # returns a list of 3 names
                 for idx in range(len(player_picks)):
                     if player_picks[idx] == champ_standings[idx]:
-                        self._insert_bonus_point(bonus=50, player=name, rider=player_picks[idx])
+                        self._insert_bonus_point(bonus=50, player=name)
                         thirty_bonus_tracker.append(False)
                         print(f"50 points for {name} with {player_picks[idx]} in "
                               f"position {idx + 1} ")
@@ -230,21 +239,20 @@ class PointsKeeper:
                         thirty_bonus_tracker.append(False)
 
                 if all(thirty_bonus_tracker):
-                    self._insert_bonus_point(bonus=30, player=name, rider=rider)
+                    self._insert_bonus_point(bonus=30, player=name)
                     print(f"Congrats - 30 bonus points for {name} in {single_category}")
                 else:
                     print(f"No 30 bonus points for {name} in {single_category}")
 
-    def _insert_bonus_point(self, bonus: int, player: str, rider: str) -> None:
+    def _insert_bonus_point(self, bonus: int, player: str) -> None:
         """
         A method to insert the provided bonus points for the given player and their rider.
 
         Args:
             bonus: The number of points to award the player for a correct pick.
             player: The player receiving the bonus points.
-            rider: The rider who finished in the expected position or in the top three.
         """
-        bonus_name = "bonus_50 "if bonus == 50 else "bonus_30"
+        bonus_name = "bonus_50" if bonus == 50 else "bonus_30"
         doc_ref = self.fdb_manager.db.collection("players")
         current_bonus = doc_ref.document(player).get().to_dict()[bonus_name]
         doc_ref.document(player).update({bonus_name: current_bonus + bonus})
@@ -309,6 +317,6 @@ class PointsKeeper:
 
 if __name__ == "__main__":
     pk = PointsKeeper()
-    race = 19
+    race = 20
     pk.update_points(race_num=race, year=2023, final_race=True)
     # pk.summarise_points(race_num=race)

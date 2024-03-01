@@ -14,9 +14,12 @@ if "current_analysis_df" not in st.session_state:
 # region Introduction to page
 st.markdown("# Free Practice Analysis")
 st.write("## :chart_with_upwards_trend: Plot lots of things! :chart_with_downwards_trend:")
-st.write("This page is to analyse MotoGP practice sessions.")
-st.write("If the race has completed, the data can be added for comparison. Tick the box above 'Get sessions' button.")
-st.write("Choose a race weekend, choose the sessions to analyse and the year.")
+st.write("This page is to analyse MotoGP/2/3 practice sessions.")
+# st.write("If the race has completed (for GP only currently), the data can be added for comparison. "
+#          "Tick the box above 'Get sessions' button.")
+st.write("Choose a race weekend, choose the sessions to display and the year.")
+st.write("The **session choice** is important as the session names have changed over the years. If the incorrect "
+         "session name is picked, it will result in missing data.")
 st.write("**This page is still under construction and so may change at any moment**")
 st.write("I am still figuring out what is useful and what is not, and how best to incorporate tyre compound and life "
          "into the analysis.")
@@ -166,33 +169,48 @@ def visualise_data(full_df: pd.DataFrame):
 if __name__ == "__main__":
     data_wrangler = DataWrangler()
 
+    sessions_names = [
+        "GP: FP1, PR, FP2, WUP",
+        "GP: P1, P2, FP, WUP",
+        "GP: FP1, FP2, FP3, FP4, WUP",
+        "GP: FP1, FP2, FP3, WUP",
+        "2: P1, P2, P3",
+        "2: FP1, FP2, FP3, WUP",
+        "3: P1, P2, P3",
+        "3: FP1, FP2, FP3, WUP"
+    ]
+
     races = [
         "QAT", "INA", "ARG", "AME", "POR", "SPA", "FRA", "ITA", "CAT", "GER", "NED", "GBR", "AUT", "RSM", "ARA", "JPN",
         "THA", "AUS", "MAL", "VAL", "IND", "INA"
     ]
+    categories = ["MotoGP", "Moto2", "Moto3"]
     with st.form('my_form'):
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns([2, 2, 2, 4])
         with col1:
-            year = st.selectbox("Select year", range(2010, 2024), index=13)
+            category = st.selectbox("Select class", categories, index=0)
         with col2:
-            race = st.selectbox("Select race", races, index=5)
+            year = st.selectbox("Select year", range(2010, 2025), index=13)
         with col3:
+            race = st.selectbox("Select race", races, index=5)
+        with col4:
             session = st.selectbox(
                 label="Select session",
-                options=["Old style", "New style", "Latest style"],
-                index=1,
-                help="New style is for P1, P2 and FP, Old style is for FP1, FP2 etc., Latest style is FP1, PR, FP2."
+                options=sessions_names,
+                index=0,
+                help="Pick the session names that the event you wish to analyse actually had."
             )
-        race_laps = st.checkbox("Include full race lap times (not sprint)", )
+        # race_laps = st.checkbox("Include full race lap times (not sprint)", )
+        race_laps = False
         submit = st.form_submit_button("Get sessions")
 
     if submit:
-        data = data_wrangler.get_motogp_practice_sessions(year, race, session)
+        data = data_wrangler.get_practice_sessions(category, year, race, session)
         if race_laps:
             race_df = data_wrangler.get_race_pace_for_practice_comparison(year, race)
             if race_df is not None:
                 data = data_wrangler.vertically_concat_dataframes(data, race_df)
-                st.session_state["current_analysis_df"] = deepcopy(data)
+        st.session_state["current_analysis_df"] = deepcopy(data)
         visualise_data(data)
     elif st.session_state["current_analysis_df"] is not None:
         visualise_data(st.session_state["current_analysis_df"])

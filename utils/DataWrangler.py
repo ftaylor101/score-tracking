@@ -11,6 +11,12 @@ from utils.Parser import PdfParser
 from utils.Retriever import PdfRetriever
 from fp_analysis.Metrics import MetricsCalculator
 
+import matplotlib as mpl
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+
+from sklearn.mixture import BayesianGaussianMixture
+from sklearn.datasets import make_blobs
 
 class DataWrangler:
     """
@@ -21,36 +27,38 @@ class DataWrangler:
         self.pdf_parser = PdfParser()
         self.metrics_calculator = MetricsCalculator()
 
-    def get_race(self, year: int, race: str, category: str) -> Union[pd.DataFrame, None]:
+    def get_race(self, category: str, year: int, race: str, session: str) -> Union[pd.DataFrame, None]:
         """
         A method to check if a race exists, retrieves it and parses the file to extract all lap times.
 
+        :param category: The racing class for which to retrieve the race analysis.
         :param year: The year of the desired race.
         :param race: The race 3-letter code.
-        :param category: The race category, MotoGP, Moto2 etc.
+        :param session: The race type, either RAC or SPR.
         :return: The dataframe with all lap times from all riders.
         """
-        exist = self.pdf_retriever.check_race_exist(year, race, category)
+        exist = self.pdf_retriever.check_sessions_exist(category, year, race, session)
         out = None
         if exist:
-            race_file_name = self.pdf_retriever.retrieve_race_files(year, race, category, "analysis")
+            race_file_name = self.pdf_retriever.retrieve_race_files(category, year, race, session, "analysis")
             if race_file_name:
                 out = self.pdf_parser.parse_pdf(race_file_name, delete_if_less_than_three=False, is_race=True)
         return out
 
-    def get_motogp_practice_sessions(self, year: int, race: str, session: str) -> Union[pd.DataFrame, None]:
+    def get_practice_sessions(self, category: str, year: int, race: str, session: str) -> Union[pd.DataFrame, None]:
         """
         A method to check which sessions exist, retrieves them and parses the files to extract all lap times.
 
+        :param category: The racing class for which to retrieve the sessions.
         :param year: The year of the desired sessions.
         :param race: The race of the desired sessions.
         :param session: The format of the desired sessions.
         :return: The dataframe with all lap times for all riders for all practice sessions.
         """
-        exists = self.pdf_retriever.check_motogp_practice_sessions_exist(year, race, session)
+        exists = self.pdf_retriever.check_sessions_exist(category, year, race, session)
         out = None
         if exists:
-            all_session_file_names = self.pdf_retriever.retrieve_practice_files(year, race, session)
+            all_session_file_names = self.pdf_retriever.retrieve_practice_files(category, year, race, session)
             final_df = pd.DataFrame()
             for file in all_session_file_names:
                 tmp_df = self.pdf_parser.parse_pdf(file, delete_if_less_than_three=True, is_race=False)
@@ -66,7 +74,7 @@ class DataWrangler:
         :param race: The race of the desired sessions.
         :return:
         """
-        exists = self.pdf_retriever.check_race_exist(year, race, "MotoGP Race")
+        exists = self.pdf_retriever.check_sessions_exist("MotoGP", year, race, "RAC")
         out = None
         if exists:
             race_session_file = self.pdf_retriever.retrieve_race_files(year, race, "MotoGP Race", "analysis")
@@ -259,29 +267,37 @@ class DataWrangler:
 
 if __name__ == "__main__":
     dw = DataWrangler()
-    # year = 2023
-    # race = "SPA"
-    # session = "New style"
-    # practice_df = dw.get_motogp_practice_sessions(year, race, session)
-    # race_df = dw.get_race_pace_for_practice_comparison(year, race)
-    # combined_df = dw.vertically_concat_dataframes(practice_df, race_df)
-    #
-    # sess_df = dw.copy_df(combined_df["Session"])
-    # data_df = dw.drop_column(combined_df, "Session")
-    #
-    # med_value = dw.median_of_all_columns(data_df)
-    # min_lap = med_value * 0.9
-    # max_lap = med_value * 1.3
-    # masked_df = dw.mask_df(data_df, min_lap, max_lap)
-    #
-    # fastest_lap, fastest_rider = dw.minimum_of_all_columns(masked_df)
-    # print(f"Fastest lap was {fastest_lap} by {fastest_rider}")
-    #
-    # sorted_df, riders = dw.sort_by_median(masked_df)
-    #
-    # with_sess_df = dw.horizontally_concat_dataframes(sorted_df, sess_df)
-    #
-    # melt_with_sess_df = dw.melt(with_sess_df)
+    year = 2023
+    race = "QAT"
+    session = "Latest style"
+    practice_df = dw.get_practice_sessions(year, race, session)
+    race_df = dw.get_race_pace_for_practice_comparison(year, race)
+    combined_df = dw.vertically_concat_dataframes(practice_df, race_df)
+
+    sess_df = dw.copy_df(combined_df["Session"])
+    data_df = dw.drop_column(combined_df, "Session")
+
+    med_value = dw.median_of_all_columns(data_df)
+    min_lap = med_value * 0.9
+    max_lap = med_value * 1.3
+    masked_df = dw.mask_df(data_df, min_lap, max_lap)
+
+    fastest_lap, fastest_rider = dw.minimum_of_all_columns(masked_df)
+    print(f"Fastest lap was {fastest_lap} by {fastest_rider}")
+
+    sorted_df, riders = dw.sort_by_median(masked_df)
+
+    with_sess_df = dw.horizontally_concat_dataframes(sorted_df, sess_df)
+
+    melt_with_sess_df = dw.melt_on_session(with_sess_df)
+
+    centers = [[1, 1], [-1, -1], [1.5, -1.5]]
+    X, labels_true = make_blobs(
+        n_samples=750, centers=centers, cluster_std=[0.4, 0.1, 0.75], random_state=0
+    )
+    d = np.expand_dims(melt_with_sess_df["LapTimes"].values, axis=1)
+    dw.metrics_calculator.cluster(d)
+    b = 2
     #
     # plotly_strip_fig = dw.plotly_strip_chart(melt_with_sess_df, "LapTimes", "Riders", "Session")
     # # plotly_strip_fig.show()
@@ -304,24 +320,24 @@ if __name__ == "__main__":
     # heatmap = dw.plotly_heatmap(new_df)
     # heatmap.show()
 
-    year = 2023
-    race = "INA"
-    category = "Moto2"
-    raw_df = dw.get_race(year, race, category)
-    data_df = dw.drop_column(raw_df, "Session")
-
-    winner = dw.values_of_first_column(data_df)
-    gap_df = dw.gap_between_column_and_dataframe(data_df, winner)
-    melt_gap_df = dw.melt_on_lap(gap_df, list(dw.get_column_names(data_df)))
-    melt_gap_df = dw.rename_columns(melt_gap_df, {"index": "Lap", "variable": "Rider", "value": "Gap"})
-    line_fig = dw.plotly_line_chart(melt_gap_df, "Lap", "Gap", "Rider")
-    line_fig.show()
-
-    violin_fig = dw.plotly_standard_violin(data_df, list(dw.get_column_names(data_df)))
-    violin_fig.show()
-
-    box_fig = dw.plotly_box_plot(data_df)
-    box_fig.show()
+    # year = 2023
+    # race = "INA"
+    # category = "Moto2"
+    # raw_df = dw.get_race(year, race, category)
+    # data_df = dw.drop_column(raw_df, "Session")
+    #
+    # winner = dw.values_of_first_column(data_df)
+    # gap_df = dw.gap_between_column_and_dataframe(data_df, winner)
+    # melt_gap_df = dw.melt_on_lap(gap_df, list(dw.get_column_names(data_df)))
+    # melt_gap_df = dw.rename_columns(melt_gap_df, {"index": "Lap", "variable": "Rider", "value": "Gap"})
+    # line_fig = dw.plotly_line_chart(melt_gap_df, "Lap", "Gap", "Rider")
+    # line_fig.show()
+    #
+    # violin_fig = dw.plotly_standard_violin(data_df, list(dw.get_column_names(data_df)))
+    # violin_fig.show()
+    #
+    # box_fig = dw.plotly_box_plot(data_df)
+    # box_fig.show()
 
     a = 1
 

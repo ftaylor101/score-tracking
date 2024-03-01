@@ -64,21 +64,30 @@ def visualise_race(the_race_df: pd.DataFrame):
 if __name__ == "__main__":
     data_wrangler = DataWrangler()
 
+    categories = ["MotoGP", "Moto2", "Moto3"]
+    session_names = ["RAC", "SPR"]
     races = [
         "QAT", "INA", "ARG", "AME", "POR", "SPA", "FRA", "ITA", "CAT", "GER", "NED", "GBR", "AUT", "RSM", "ARA", "JPN",
         "THA", "AUS", "MAL", "VAL", "IND", "INA"
     ]
     with st.form('my_form'):
-        race_category = st.radio("Select race", ["MotoGP Race", "MotoGP Sprint", "Moto2", "Moto3"])
-        col1, col2 = st.columns(2)
+        # race_category = st.radio("Select race", ["MotoGP Race", "MotoGP Sprint", "Moto2", "Moto3"])
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
-            year = st.selectbox("Select year", range(2010, 2024), index=13)
+            race_class = st.selectbox("Select class", categories, index=0)
         with col2:
+            year = st.selectbox("Select year", range(2010, 2025), index=13)
+        with col3:
             race = st.selectbox("Select race", races, index=5)
+        with col4:
+            race_type = st.selectbox("Select race type", session_names, index=0)
         analyse = st.form_submit_button("Analyse race")
 
     if analyse:
-        data = data_wrangler.get_race(year, race, race_category)
+        if race_type == "SPR" and race_class != "MotoGP":
+            st.error("Sprint selected for non MotoGP class")
+            st.stop()
+        data = data_wrangler.get_race(race_class, year, race, race_type)
         st.session_state["current_race_df"] = deepcopy(data)
         visualise_race(data)
     elif st.session_state["current_race_df"] is not None:

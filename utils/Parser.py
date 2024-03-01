@@ -2,6 +2,8 @@ import fitz
 import re
 import pandas as pd
 
+from typing import Optional
+
 
 class PdfParser:
     """
@@ -123,13 +125,15 @@ class PdfParser:
         return rider_and_lap_time_df
 
     @staticmethod
-    def parse_race_results_pdf(file: str) -> pd.DataFrame:
+    def parse_race_results_pdf(file: str) -> Optional[pd.DataFrame]:
         """
         This method accepts a PDF and returns a dataframe with all riders and their points scored.
 
         :param file: The file path including file name and extension to the race results file.
         :return: a dataframe
         """
+        if file is None:
+            return None
         with fitz.Document(file) as doc:
             text = doc[0].get_text()
 

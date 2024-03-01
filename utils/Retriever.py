@@ -8,11 +8,9 @@ from urllib.error import HTTPError
 
 class PdfRetriever:
     """
-    This class is for retrieving MotoGP Practice Session PDFs.
+    This class is for retrieving session PDFs for all classes in the MotoGP championship.
     """
     def __init__(self):
-        self.year = None
-        self.race = None
         self.session = None
         self.sessions = None
 
@@ -23,9 +21,14 @@ class PdfRetriever:
             "Moto3": "Moto3",
         }
         self.session_style = {
-            "Old style": ["FP1", "FP2", "FP3", "FP4", "WUP"],
-            "New style": ["P1", "P2", "FP", "WUP"],
-            "Latest style": ["FP1", "PR", "FP2", "WUP"]
+            "GP: FP1, PR, FP2, WUP": ["FP1", "PR", "FP2", "WUP"],
+            "GP: P1, P2, FP, WUP": ["P1", "P2", "FP", "WUP"],
+            "GP: FP1, FP2, FP3, FP4, WUP": ["FP1", "FP2", "FP3", "FP4", "WUP"],
+            "GP: FP1, FP2, FP3, WUP": ["FP1", "FP2", "FP3", "WUP"],
+            "2: P1, P2, P3": ["P1", "P2", "P3"],
+            "2: FP1, FP2, FP3, WUP": ["FP1", "FP2", "FP3", "WUP"],
+            "3: P1, P2, P3": ["P1", "P2", "P3"],
+            "3: FP1, FP2, FP3, WUP": ["FP1", "FP2", "FP3", "WUP"]
         }
 
     @staticmethod
@@ -48,53 +51,62 @@ class PdfRetriever:
 
         return exist
 
-    def check_motogp_practice_sessions_exist(self, year: int, race: str, session: str) -> bool:
+    def check_sessions_exist(self, category: str, year: int, race: str, session: str) -> bool:
         """
-        Uses the arguments given to form a URL and check the MotoGP practice session validity.
+        Uses the arguments given to form a URL and check the practice session validity.
 
+        :param category: The name of the racing class.
         :param year: The year of the desired sessions.
         :param race: The race of the desired sessions.
         :param session: The format of the desired sessions.
         :return: Boolean, True if a session exists, otherwise False.
         """
         url_exists = False
-        session_types = self.session_style[session]
+
+        if "SPR" == session or "RAC" == session:
+            session_types = [session]
+        else:
+            session_types = self.session_style[session]
         while not url_exists:
             for sess in session_types:
                 url_exists = self.__check_url_validity(
-                    url=f"https://www.motogp.com/en/gp-results/{year}/{race}/MotoGP/{sess}/Classification"
+                    url=f"https://www.motogp.com/en/gp-results/{year}/{race}/{category}/{sess}/Classification"
                 )
-                print(f"{year}-{race}-{sess} exist: {url_exists}")
-            else:
-                print(f"No sessions found for {sess}")
+                if url_exists:
+                    print(f"{category}-{year}-{race}-{sess} exist: {url_exists}")
+                else:
+                    print(f"No session found for {sess} in {category}-{year}-{race}-{sess}")
+            if not url_exists:
+                print(f"No sessions found for {category}-{year}-{race}")
                 break
 
         return url_exists
 
-    def check_race_exist(self, year: int, race: str, category: str) -> bool:
-        """
-        Uses the arguments given to form a URL and check the validity of the results page for the race.
+    # def check_race_exist(self, year: int, race: str, category: str) -> bool:
+    #     """
+    #     Uses the arguments given to form a URL and check the validity of the results page for the race.
+    #
+    #     :param year: The year of the desired race.
+    #     :param race: The race's 3-letter code.
+    #     :param category: The category of the race.
+    #     :return: Boolean, True if a race and /or sprint exists, otherwise False.
+    #     """
+    #     sess = "SPR" if category == "MotoGP Sprint" else "RAC"
+    #     race_class = self.categories[category]
+    #
+    #     url_exists = self.__check_url_validity(
+    #         url=f"https://www.motogp.com/en/gp-results/{year}/{race}/{race_class}/{sess}/Classification"
+    #     )
+    #     if not url_exists:
+    #         print(f"No {category} race found")
+    #
+    #     return url_exists
 
-        :param year: The year of the desired race.
-        :param race: The race's 3-letter code.
-        :param category: The category of the race.
-        :return: Boolean, True if a race and /or sprint exists, otherwise False.
-        """
-        sess = "SPR" if category == "MotoGP Sprint" else "RAC"
-        race_class = self.categories[category]
-
-        url_exists = self.__check_url_validity(
-            url=f"https://www.motogp.com/en/gp-results/{year}/{race}/{race_class}/{sess}/Classification"
-        )
-        if not url_exists:
-            print(f"No {category} race found")
-
-        return url_exists
-
-    def retrieve_practice_files(self, year: int, race: str, session: str) -> List[str]:
+    def retrieve_practice_files(self, category: str, year: int, race: str, session: str) -> List[str]:
         """
         Gets the PDF from the website.
 
+        :param category: The racing class for which to get the session file.
         :param year: The year of the desired sessions.
         :param race: The race of the desired sessions.
         :param session: The format of the desired sessions.
@@ -105,16 +117,13 @@ class PdfRetriever:
         except ValueError:
             raise ValueError("Session not set correctly")
 
-        self.year = year
-        self.race = race
-
         file_names = list()
 
         for sess in sessions:
-            url = f"https://resources.motogp.com/files/results/{self.year}/{self.race}/MotoGP/{sess}/Analysis.pdf"
+            url = f"https://resources.motogp.com/files/results/{year}/{race}/{category}/{sess}/Analysis.pdf"
             valid_url = self.__check_url_validity(url)
             if valid_url:
-                download_name = r"../score-tracking/static/" + f"{year}_{race}_{sess}.pdf"
+                download_name = (r"../score-tracking/static/" + f"{category}-{year}_{race}_{sess}.pdf")
                 if os.path.isfile(download_name):
                     file_name = download_name
                 else:
@@ -123,30 +132,27 @@ class PdfRetriever:
 
         return file_names
 
-    def retrieve_race_files(self, year: int, race: str, category: str, session_type: str) -> Union[str, None]:
+    def retrieve_race_files(self, category: str, year: int, race: str, race_type: str, data_type: str)\
+            -> Union[str, None]:
         """
         Gets the PDF from the website for race pace analysis or race results.
 
+        :param category: The racing class for which to get race files.
         :param year: The year of the desired race.
         :param race: The race of the desired race.
-        :param category: The category of the desired race.
-        :param session_type:
+        :param race_type: The category of the desired race.
+        :param data_type:
             The type of document retrieved, either race pace ("analysis") or finishing order ("results").
         :return: The pdf name saved locally or None if no analysis file exists.
         """
-        race_type = "SPR" if category == "MotoGP Sprint" else "RAC"
-        race_class = self.categories[category]
-        name = "Analysis" if session_type == "analysis" else "Classification"
-
-        self.year = year
-        self.race = race
+        name = "Analysis" if data_type == "analysis" else "Classification"
 
         url = \
-            f"https://resources.motogp.com/files/results/{self.year}/{self.race}/{race_class}/{race_type}/{name}.pdf"
+            f"https://resources.motogp.com/files/results/{year}/{race}/{category}/{race_type}/{name}.pdf"
         valid_url = self.__check_url_validity(url)
         file_name = None
         if valid_url:
-            download_name = r"../score-tracking/static/" + f"{year}_{race}_{race_class}_{race_type}_{name}.pdf"
+            download_name = (r"../score-tracking/static/" + f"{year}_{race}_{category}_{race_type}_{name}.pdf")
             if os.path.isfile(download_name):
                 file_name = download_name
             else:
