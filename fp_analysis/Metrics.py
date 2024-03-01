@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.neighbors import KernelDensity
-from sklearn.cluster import HDBSCAN
+# from sklearn.cluster import HDBSCAN
 from scipy.special import kl_div, softmax
 from scipy import stats
 from typing import Tuple
@@ -73,20 +73,20 @@ class MetricsCalculator:
             numbins=num_of_bins
         )
 
-    def cluster(self, X: np.ndarray):
-        """Wrapper around Scikit-Learn HDBSCAN."""
-        fig, axes = plt.subplots(3, 1, figsize=(10, 12))
-        hdb = HDBSCAN()
-        for idx, scale in enumerate([1, 0.5, 3]):
-            hdb.fit(X * scale)
-            self.plot(
-                X * scale,
-                hdb.labels_,
-                hdb.probabilities_,
-                ax=axes[idx],
-                parameters={"scale": scale},
-            )
-        plt.show()
+    # def cluster(self, X: np.ndarray):
+    #     """Wrapper around Scikit-Learn HDBSCAN."""
+    #     fig, axes = plt.subplots(3, 1, figsize=(10, 12))
+    #     hdb = HDBSCAN()
+    #     for idx, scale in enumerate([1, 0.5, 3]):
+    #         hdb.fit(X * scale)
+    #         self.plot(
+    #             X * scale,
+    #             hdb.labels_,
+    #             hdb.probabilities_,
+    #             ax=axes[idx],
+    #             parameters={"scale": scale},
+    #         )
+    #     plt.show()
 
     @staticmethod
     def plot(X, labels, probabilities=None, parameters=None, ground_truth=False, ax=None):
