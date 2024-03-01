@@ -11,12 +11,8 @@ from utils.Parser import PdfParser
 from utils.Retriever import PdfRetriever
 from fp_analysis.Metrics import MetricsCalculator
 
-import matplotlib as mpl
-import matplotlib.gridspec as gridspec
-import matplotlib.pyplot as plt
-
-from sklearn.mixture import BayesianGaussianMixture
 from sklearn.datasets import make_blobs
+
 
 class DataWrangler:
     """
@@ -45,7 +41,8 @@ class DataWrangler:
                 out = self.pdf_parser.parse_pdf(race_file_name, delete_if_less_than_three=False, is_race=True)
         return out
 
-    def get_practice_sessions(self, category: str, year: int, race: str, session: str) -> Union[pd.DataFrame, None]:
+    def get_practice_sessions(
+            self, category: str, year: int, race: str, session: Union[List[str], str]) -> Union[pd.DataFrame, None]:
         """
         A method to check which sessions exist, retrieves them and parses the files to extract all lap times.
 
@@ -267,10 +264,11 @@ class DataWrangler:
 
 if __name__ == "__main__":
     dw = DataWrangler()
-    year = 2023
-    race = "QAT"
-    session = "Latest style"
-    practice_df = dw.get_practice_sessions(year, race, session)
+    category = "Moto3"
+    year = 2024
+    race = "ES3"
+    session = ["FP1", "FP2", "FP3", "FP4", "FP5", "FP6", "FP7", "FP8", "FP9"]
+    practice_df = dw.get_practice_sessions(category, year, race, session)
     race_df = dw.get_race_pace_for_practice_comparison(year, race)
     combined_df = dw.vertically_concat_dataframes(practice_df, race_df)
 
@@ -296,7 +294,6 @@ if __name__ == "__main__":
         n_samples=750, centers=centers, cluster_std=[0.4, 0.1, 0.75], random_state=0
     )
     d = np.expand_dims(melt_with_sess_df["LapTimes"].values, axis=1)
-    dw.metrics_calculator.cluster(d)
     b = 2
     #
     # plotly_strip_fig = dw.plotly_strip_chart(melt_with_sess_df, "LapTimes", "Riders", "Session")

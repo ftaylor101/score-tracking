@@ -39,6 +39,7 @@ class PdfRetriever:
         :param url: The URL to check.
         :return: True if URL is valid, False otherwise.
         """
+        print(url)
         exist = False
 
         try:
@@ -51,7 +52,7 @@ class PdfRetriever:
 
         return exist
 
-    def check_sessions_exist(self, category: str, year: int, race: str, session: str) -> bool:
+    def check_sessions_exist(self, category: str, year: int, race: str, session: Union[List[str], str]) -> bool:
         """
         Uses the arguments given to form a URL and check the practice session validity.
 
@@ -63,10 +64,16 @@ class PdfRetriever:
         """
         url_exists = False
 
-        if "SPR" == session or "RAC" == session:
-            session_types = [session]
+        if isinstance(session, str):
+            if "SPR" == session or "RAC" == session:
+                session_types = [session]
+            else:
+                session_types = self.session_style[session]
+        elif isinstance(session, list):
+            session_types = session
         else:
-            session_types = self.session_style[session]
+            print("Incorrect session type")
+            return False
         while not url_exists:
             for sess in session_types:
                 url_exists = self.__check_url_validity(
@@ -102,7 +109,8 @@ class PdfRetriever:
     #
     #     return url_exists
 
-    def retrieve_practice_files(self, category: str, year: int, race: str, session: str) -> List[str]:
+    def retrieve_practice_files(
+            self, category: str, year: int, race: str, session: Union[List[str], str]) -> List[str]:
         """
         Gets the PDF from the website.
 
@@ -112,10 +120,12 @@ class PdfRetriever:
         :param session: The format of the desired sessions.
         :return: The pdf name saved locally
         """
-        try:
+        if isinstance(session, str):
             sessions = self.session_style[session]
-        except ValueError:
-            raise ValueError("Session not set correctly")
+        elif isinstance(session, list):
+            sessions = session
+        else:
+            raise ValueError("Error in Retriever - incorrect session types")
 
         file_names = list()
 
@@ -123,7 +133,7 @@ class PdfRetriever:
             url = f"https://resources.motogp.com/files/results/{year}/{race}/{category}/{sess}/Analysis.pdf"
             valid_url = self.__check_url_validity(url)
             if valid_url:
-                download_name = (r"../score-tracking/static/" + f"{category}-{year}_{race}_{sess}.pdf")
+                download_name = (r"C:/Users/ftayl/PycharmProjects/score-tracking/static/" + f"{category}-{year}_{race}_{sess}.pdf")
                 if os.path.isfile(download_name):
                     file_name = download_name
                 else:
