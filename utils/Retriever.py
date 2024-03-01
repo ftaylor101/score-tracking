@@ -133,7 +133,7 @@ class PdfRetriever:
             url = f"https://resources.motogp.com/files/results/{year}/{race}/{category}/{sess}/Analysis.pdf"
             valid_url = self.__check_url_validity(url)
             if valid_url:
-                download_name = (r"C:/Users/ftayl/PycharmProjects/score-tracking/static/" + f"{category}-{year}_{race}_{sess}.pdf")
+                download_name = (r"../score-tracking/static/" + f"{category}-{year}_{race}_{sess}.pdf")
                 if os.path.isfile(download_name):
                     file_name = download_name
                 else:
