@@ -116,9 +116,7 @@ class FirestoreDatabaseManager:
             firebase_admin.initialize_app(cred)
         return firestore.client()
 
-    def get_picks_data(
-            self, pick_file_path: str = r"players_2023.json")\
-            -> None:
+    def get_picks_data(self, pick_file_path: str) -> None:
         """
         Get the data regarding players and their picks.
         Args:
@@ -173,7 +171,7 @@ class FirestoreDatabaseManager:
 
 if __name__ == "__main__":
     fdb = FirestoreDatabaseManager()
-    fdb.get_picks_data()
+    fdb.get_picks_data(r"players_2024.json")
     fdb.create_scores_collection()
     fdb.create_players_collection()
     fdb.create_picks_collection()

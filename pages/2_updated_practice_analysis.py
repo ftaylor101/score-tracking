@@ -190,7 +190,7 @@ if __name__ == "__main__":
         with col1:
             category = st.selectbox("Select class", categories, index=0)
         with col2:
-            year = st.selectbox("Select year", range(2010, 2025), index=13)
+            year = st.selectbox("Select year", range(2010, 2025), index=14)
         with col3:
             race = st.selectbox("Select race", races, index=5)
         with col4:
