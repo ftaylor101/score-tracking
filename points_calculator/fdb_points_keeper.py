@@ -101,6 +101,9 @@ class PointsKeeper:
                 points_store["category"] = single_category
                 all_points.append(points_store)
 
+            # update rider points
+            # self._update_rider_points(players_points=all_points, race_num=race_num)
+
             # update player points
             self._update_player_points(player_name=name, players_points=all_points, race_num=race_num)
 
@@ -109,6 +112,22 @@ class PointsKeeper:
 
         # update record of current race number
         self.fdb_manager.db.collection("race update").document("current race number").update({"race": race_num})
+
+    def _update_rider_points(self, players_points: List, race_num: int) -> None:
+        """
+        A method to only update the player's scores with the provided points for the race defined by the race code.
+
+        :param players_points: The players points.
+        :param race_num: The race's calendar event number.
+        """
+        race_code = self.race_resources.race_number[race_num]
+        for category in players_points:
+            for rider in category.keys():
+                if rider == "category":
+                    continue
+                else:
+                    rider_doc = self.fdb_manager.db.collection("scores").document(rider)
+                    rider_doc.update({self.race_resources.race_names[race_code]: category[rider]})
 
     def _update_player_points(self, player_name: str, players_points: List, race_num: int) -> None:
         """
@@ -136,16 +155,12 @@ class PointsKeeper:
         for category in players_points:
             player_scores = 0
             for rider in category.keys():
-                if rider in self._score_has_been_updated:
-                    player_scores += category[rider]
-                    continue
-                elif rider == "category":
+                rider_doc = self.fdb_manager.db.collection("scores").document(rider)
+                if rider == "category":
                     current_category = category[rider]
                     continue
                 else:
-                    rider_doc = self.fdb_manager.db.collection("scores").document(rider)
-                    rider_doc.update({self.race_resources.race_names[race_code]: category[rider]})
-                    player_scores += category[rider]
+                    player_scores += rider_doc.get().to_dict()[self.race_resources.race_names[race_code]]
                     self._score_has_been_updated.append(rider)
 
             for key in current_player_scores.keys():
@@ -317,6 +332,6 @@ class PointsKeeper:
 
 if __name__ == "__main__":
     pk = PointsKeeper()
-    race = 1
+    race = 9
     pk.update_points(race_num=race, year=2024, final_race=False)
     # pk.summarise_points(race_num=race)
