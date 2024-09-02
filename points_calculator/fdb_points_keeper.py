@@ -101,8 +101,14 @@ class PointsKeeper:
                 points_store["category"] = single_category
                 all_points.append(points_store)
 
+            # How to use the methods below:
+            # If riders have been penalised, run update_points with _update_player_points commented out
+            # This will only update the points for each rider in the database.
+            # Then change the points scored for the riders affected by penalties in Firebase.
+            # Comment out _update_rider_points, re-enable _update_player_points and the players' totals will be
+            # calculated using the corrected scores from the riders in the database, not from what was scraped.
             # update rider points
-            # self._update_rider_points(players_points=all_points, race_num=race_num)
+            self._update_rider_points(players_points=all_points, race_num=race_num)
 
             # update player points
             self._update_player_points(player_name=name, players_points=all_points, race_num=race_num)
@@ -332,6 +338,6 @@ class PointsKeeper:
 
 if __name__ == "__main__":
     pk = PointsKeeper()
-    race = 9
+    race = 13
     pk.update_points(race_num=race, year=2024, final_race=False)
     # pk.summarise_points(race_num=race)
