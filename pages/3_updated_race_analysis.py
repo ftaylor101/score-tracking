@@ -68,7 +68,7 @@ if __name__ == "__main__":
     session_names = ["RAC", "SPR"]
     races = [
         "QAT", "INA", "ARG", "AME", "POR", "SPA", "FRA", "ITA", "CAT", "GER", "NED", "GBR", "AUT", "RSM", "ARA", "JPN",
-        "THA", "AUS", "MAL", "VAL", "IND", "INA"
+        "THA", "AUS", "MAL", "VAL", "IND", "INA", "EMI"
     ]
     with st.form('my_form'):
         # race_category = st.radio("Select race", ["MotoGP Race", "MotoGP Sprint", "Moto2", "Moto3"])
