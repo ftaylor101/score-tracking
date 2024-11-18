@@ -172,24 +172,24 @@ score_df.rename(
     inplace=True
 )
 
-# st.write("Final points with bonus points")
-# final_points_df = deepcopy(score_df)
-# final_points_df = final_points_df.drop(columns=[(0, "Total")])
-# final_points_df = final_points_df.reindex(columns=sorted(final_points_df.columns))
-# final_points_df[("Player", "Player")] = final_points_df.index
-# final_points_df.index = pd.RangeIndex(1, len(final_points_df.index) + 1)
-# final_points_df = final_points_df.droplevel(level=0, axis="columns")
-# final_points_df = final_points_df.drop(columns=["Current week", "Current week Moto2", "Current week Moto3", "Current week MotoGP"])
-# final_points_df = move_column(final_points_df, "Player", 0)
-# final_points_df["Total (with bonuses)"] = final_points_df.sum(axis=1)
-# final_points_df = move_column(final_points_df, "Total (with bonuses)", 1)
-# final_points_df.sort_values(by=["Total (with bonuses)"], ascending=False, axis=0, inplace=True)
-# final_points_df.reset_index(drop=True, inplace=True)
-# float_cols = final_points_df.columns[1:]  # Player name column has been set as the first column
-# final_formatted_df = final_points_df.style.format('{:.1f}', subset=float_cols)
-# final_formatted_df.apply(highlight_finals_column, axis=None)
-#
-# st.dataframe(final_formatted_df)
+st.write("Final points with bonus points")
+final_points_df = deepcopy(score_df)
+final_points_df = final_points_df.drop(columns=[(0, "Total")])
+final_points_df = final_points_df.reindex(columns=sorted(final_points_df.columns))
+final_points_df[("Player", "Player")] = final_points_df.index
+final_points_df.index = pd.RangeIndex(1, len(final_points_df.index) + 1)
+final_points_df = final_points_df.droplevel(level=0, axis="columns")
+final_points_df = final_points_df.drop(columns=["Current week", "Current week Moto2", "Current week Moto3", "Current week MotoGP"])
+final_points_df = move_column(final_points_df, "Player", 0)
+final_points_df["Total (with bonuses)"] = final_points_df.sum(axis=1)
+final_points_df = move_column(final_points_df, "Total (with bonuses)", 1)
+final_points_df.sort_values(by=["Total (with bonuses)"], ascending=False, axis=0, inplace=True)
+final_points_df.reset_index(drop=True, inplace=True)
+float_cols = final_points_df.columns[1:]  # Player name column has been set as the first column
+final_formatted_df = final_points_df.style.format('{:.1f}', subset=float_cols)
+final_formatted_df.apply(highlight_finals_column, axis=None)
+
+st.dataframe(final_formatted_df)
 
 # organising the dataframe
 to_remove = [(0, "bonus_30"), (0, "bonus_50")]
