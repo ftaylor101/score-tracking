@@ -16,7 +16,7 @@ from datetime import datetime
 
 col1, col2 = st.columns([0.8, 0.2])
 with col1:
-    st.write("#### Welcome to Sandra's MotoGP Sweepstake")
+    st.markdown("#### Welcome to ~~Sandra's~~ Frédéric's MotoGP Sweepstake")
     st.write("Points for each player are summarised in the table below. The plotting section shows each player's "
              "cumulative points and scoreboard position after each event.")
 # with col2:
