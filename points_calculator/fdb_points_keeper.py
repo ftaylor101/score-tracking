@@ -338,6 +338,6 @@ class PointsKeeper:
 
 if __name__ == "__main__":
     pk = PointsKeeper()
-    race = 15
-    pk.update_points(race_num=race, year=2024, final_race=False)
+    race = 1
+    pk.update_points(race_num=race, year=2025, final_race=False)
     # pk.summarise_points(race_num=race)
