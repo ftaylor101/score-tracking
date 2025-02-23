@@ -179,32 +179,37 @@ if __name__ == "__main__":
         "QAT", "INA", "ARG", "AME", "POR", "SPA", "FRA", "ITA", "CAT", "GER", "NED", "GBR", "AUT", "RSM", "ARA", "JPN",
         "THA", "AUS", "MAL", "VAL", "IND", "INA"
     ]
-    categories = ["MotoGP Qatar", "Moto2 Jerez",  "Moto3 Jerez"]
+    categories = ["MotoGP Barcelona", "MotoGP Thailand", "MotoGP Malaysia", "Moto2 Jerez",  "Moto3 Jerez"]
     with st.form('my_form'):
         race_class = st.selectbox("Select test", categories, index=0)
         race_laps = False
         submit = st.form_submit_button("Get sessions")
 
     if submit:
-        if race_class == "MotoGP Qatar":
-            st.error(
-                "Currently no MotoGP analysis files are available, sorry. If you find them on the MotoGP website, "
-                "please let me know. But in the mean time go look at Moto2 or 3 instead!"
-            )
-            st.stop()
-            # category = "MotoGP"
-            # year = 2024
-            # race = "QA1"
-            # session = ["FP1", "FP2"]
+        if race_class == "MotoGP Barcelona":
+            category = "MotoGP"
+            year = 2025
+            race = "BCN"
+            session = ["FP1"]
+        elif race_class == "MotoGP Thailand":
+            category = "MotoGP"
+            year = 2025
+            race = "TH1"
+            session = ["FP1", "FP2", "FP3", "FP4"]
+        elif race_class == "MotoGP Malaysia":
+            category = "MotoGP"
+            year = 2025
+            race = "MY2"
+            session = ["FP1", "FP2", "FP3"]
         elif race_class == "Moto2 Jerez":
             category = "Moto2"
-            year = 2024
-            race = "ES2"
+            year = 2025
+            race = "ES1"
             session = ["FP1", "FP2", "FP3", "FP4", "FP5", "FP6", "FP7", "FP8", "FP9"]
         elif race_class == "Moto3 Jerez":
             category = "Moto3"
-            year = 2024
-            race = "ES2"
+            year = 2025
+            race = "ES1"
             session = ["FP1", "FP2", "FP3", "FP4", "FP5", "FP6", "FP7", "FP8", "FP9"]
         else:
             st.error("Something went wrong!")
