@@ -181,8 +181,8 @@ if __name__ == "__main__":
     ]
 
     races = [
-        "QAT", "INA", "ARG", "AME", "POR", "SPA", "FRA", "ITA", "CAT", "GER", "NED", "GBR", "AUT", "RSM", "ARA", "JPN",
-        "THA", "AUS", "MAL", "VAL", "IND", "INA", "EMI"
+        "THA", "ARG", "AME", "QAT", "SPA", "FRA", "GBR", "ARA", "ITA", "NED", "GER", "AUT", "CZE", "HUN", "CAT", "RSM",
+        "JPN", "INA", "AUS", "MAL", "POR", "VAL"
     ]
     categories = ["MotoGP", "Moto2", "Moto3"]
     with st.form('my_form'):
