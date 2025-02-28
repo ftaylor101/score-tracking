@@ -25,8 +25,10 @@ class PdfRetriever:
             "GP: P1, P2, FP, WUP": ["P1", "P2", "FP", "WUP"],
             "GP: FP1, FP2, FP3, FP4, WUP": ["FP1", "FP2", "FP3", "FP4", "WUP"],
             "GP: FP1, FP2, FP3, WUP": ["FP1", "FP2", "FP3", "WUP"],
+            "2: FP1, PR, FP2, WUP": ["FP1", "PR", "FP2", "WUP"],
             "2: P1, P2, P3": ["P1", "P2", "P3"],
             "2: FP1, FP2, FP3, WUP": ["FP1", "FP2", "FP3", "WUP"],
+            "3: FP1, PR, FP2, WUP": ["FP1", "PR", "FP2", "WUP"],
             "3: P1, P2, P3": ["P1", "P2", "P3"],
             "3: FP1, FP2, FP3, WUP": ["FP1", "FP2", "FP3", "WUP"]
         }
