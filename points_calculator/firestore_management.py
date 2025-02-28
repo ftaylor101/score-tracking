@@ -171,7 +171,7 @@ class FirestoreDatabaseManager:
 
 if __name__ == "__main__":
     fdb = FirestoreDatabaseManager()
-    fdb.get_picks_data(r"players_2024.json")
+    fdb.get_picks_data(r"players_2025.json")
     fdb.create_scores_collection()
     fdb.create_players_collection()
     fdb.create_picks_collection()

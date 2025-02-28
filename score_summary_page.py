@@ -261,18 +261,18 @@ with st.expander("Plot player position progression"):
     bump_chart_pivot_df = bump_chart_df.reset_index()
     position = bump_chart_pivot_df["index"]
 
-    bmp_df = pd.DataFrame()
-    all_bmp_df = list()
-    for column in cols:
-        tmp_df = pd.concat([bump_chart_pivot_df[column], position], axis="columns")
-        tmp_df.rename(columns={column: "Player", "index": "Position"}, inplace=True)
-        tmp_df["Event name"] = column
-        all_bmp_df.append(tmp_df)
-        bmp_df = pd.concat([bmp_df, tmp_df])
-
-    bump_chart_plotly = px.line(bmp_df, x="Event name", y="Position", color="Player", symbol="Player", markers=True)
-    bump_chart_plotly.update_yaxes(autorange="reversed")
-    st.plotly_chart(bump_chart_plotly)
+    # bmp_df = pd.DataFrame()
+    # all_bmp_df = list()
+    # for column in cols:
+    #     tmp_df = pd.concat([bump_chart_pivot_df[column], position], axis="columns")
+    #     tmp_df.rename(columns={column: "Player", "index": "Position"}, inplace=True)
+    #     tmp_df["Event name"] = column
+    #     all_bmp_df.append(tmp_df)
+    #     bmp_df = pd.concat([bmp_df, tmp_df])
+    #
+    # bump_chart_plotly = px.line(bmp_df, x="Event name", y="Position", color="Player", symbol="Player", markers=True)
+    # bump_chart_plotly.update_yaxes(autorange="reversed")
+    # st.plotly_chart(bump_chart_plotly)
 
 # endregion
 
