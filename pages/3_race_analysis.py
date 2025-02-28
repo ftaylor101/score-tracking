@@ -76,7 +76,7 @@ if __name__ == "__main__":
         with col1:
             race_class = st.selectbox("Select class", categories, index=0)
         with col2:
-            year = st.selectbox("Select year", range(2010, 2026), index=14)
+            year = st.selectbox("Select year", range(2010, 2026), index=15)
         with col3:
             race = st.selectbox("Select race", races, index=5)
         with col4:
