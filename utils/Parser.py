@@ -146,16 +146,25 @@ class PdfParser:
                 print("No more classified riders")
                 break
             words = rider.split("\n")
-            rname = words[-4]
-            p_string = points_data[i + 1]
-            p_words = p_string.split("\n")
-            idx = 2 if i == 0 else 3  # cope with no value for gap for the winning rider
-            points_str = p_words[idx]
-            try:
-                points_flt = float(points_str)
-                points_dict[rname] = [points_flt]
-            except ValueError:
-                print(f"No points left in {file}")
+            points_idx = -3
+            if i == 0:
+                rider_idx = -7
+            else:
+                rider_idx = -8
+            rname = words[rider_idx]
+            points_str = words[points_idx]
+            # p_string = points_data[i + 1]
+            # p_words = p_string.split("\n")
+            # idx = 2 if i == 0 else 3  # cope with no value for gap for the winning rider
+            # points_str = p_words[idx]
+            if len(words) > 10:
+                try:
+                    points_flt = float(points_str)
+                    points_dict[rname] = [points_flt]
+                except ValueError:
+                    print(f"No points left in {file}")
+                    break
+            else:
                 break
 
         df = pd.DataFrame.from_dict(points_dict, orient='index', columns=["Points"])

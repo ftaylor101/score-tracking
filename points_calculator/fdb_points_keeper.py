@@ -107,6 +107,7 @@ class PointsKeeper:
             # Then change the points scored for the riders affected by penalties in Firebase.
             # Comment out _update_rider_points, re-enable _update_player_points and the players' totals will be
             # calculated using the corrected scores from the riders in the database, not from what was scraped.
+
             # update rider points
             self._update_rider_points(players_points=all_points, race_num=race_num)
 
