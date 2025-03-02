@@ -282,6 +282,19 @@ player_picks_df = player_picks_df[['motogp_1', 'motogp_2', 'motogp_3', 'moto2_1'
 st.dataframe(player_picks_df)
 # endregion
 
+melt_player_picks_df = player_picks_df.melt()
+melt_player_picks_df.rename(
+    columns={
+        "variable": "Count",
+        "value": "Rider"
+    },
+    inplace=True
+)
+# st.dataframe(melt_player_picks_df)
+category_counts = melt_player_picks_df['Rider'].value_counts()
+st.write("Below is a table of how many times a rider has been picked. Marquez and Bagnaia are popular!")
+st.dataframe(category_counts)
+
 # extra yogo
 # clicked = st.button("For more Yogo, click here")
 # if clicked:
